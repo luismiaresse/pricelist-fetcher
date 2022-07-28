@@ -51,6 +51,7 @@ def webdriver_init():
     chrome_options.headless = True
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--log-level=3')
     # chrome_options.add_argument('--user-agent= Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:70.0) Gecko/20100101 Firefox/70.0')
     # chrome_options.add_argument('--disable-dev-shm-usage')
     driver = uc.Chrome(options=chrome_options)
