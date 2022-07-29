@@ -1,4 +1,3 @@
-import unittest
 import pytest
 from domains import DomainInfo as DI
 from product_fetch import fetch_data
@@ -20,7 +19,7 @@ testURLs: dict[DI, str] = {
 }
 
 
-class Test(unittest.TestCase):
+class TestClass:
     # Test if any attribute is missing
     def test_domains(self):
         for dom, url in testURLs.items():
@@ -32,8 +31,3 @@ class Test(unittest.TestCase):
             for attr in attrs.values():
                 if attr is None:
                     raise AssertionError(dom.name + " (" + dom.value + ") failed: attribute is None")
-
-
-if __name__ == '__main__':
-    # unittest.main()
-    pytest.main()

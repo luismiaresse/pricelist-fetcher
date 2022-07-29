@@ -6,14 +6,14 @@ class Options:
     """
     Enum with all possible CLI options
     """
-    VERBOSE = "verbose"
-    VERYVERBOSE = "veryverbose"
+    VERBOSE = V = "verbose"
+    VERYVERBOSE = VV = "veryverbose"
 
 
 if __name__ == '__main__':
     args = setup_parser()
     opts = args.__dict__
-    if opts[Options.VERBOSE] or opts[Options.VERYVERBOSE]:
+    if opts[Options.V] or opts[Options.VV]:
         set_logger(logging.DEBUG)
     else:
         set_logger(logging.INFO)

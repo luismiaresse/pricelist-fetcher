@@ -8,7 +8,7 @@ from selenium.common.exceptions import WebDriverException, TimeoutException
 # from selenium.webdriver.chrome.options import Options
 
 # Undetected chromedriver (avoid bot detection)
-import undetected_chromedriver._compat as uc
+import undetected_chromedriver as uc
 
 # BeautifulSoup (find info in page source)
 from bs4 import BeautifulSoup
@@ -184,17 +184,14 @@ def postconditions(domain, attrs: dict):
             # Removes 'desde '
             if "desde" in attrs[AI.PRICE]:
                 attrs[AI.PRICE] = str(attrs[AI.PRICE]).removeprefix("desde ")
-        case DI.CARREFOUR:
-            # Removes whitespaces
-            attrs[AI.PROD_NAME] = str(attrs[AI.PROD_NAME]).strip()
-            attrs[AI.PRICE] = str(attrs[AI.PRICE]).strip()
         case DI.NIKE | DI.ADIDAS | DI.CONVERSE:
             # Brand is always -Name-
             if attrs[AI.BRAND] == data.NOT_SUPPORTED:
                 attrs[AI.BRAND] = domain.name
-        case DI.FOOTDISTRICT:
-            # Remove whitespaces
-            attrs[AI.BRAND] = str(attrs[AI.BRAND]).strip()
+    # Common fixes
+    attrs[AI.PROD_NAME] = str(attrs[AI.PROD_NAME]).strip()
+    attrs[AI.BRAND] = str(attrs[AI.BRAND]).strip()
+    attrs[AI.PRICE] = str(attrs[AI.PRICE]).strip()
 
 
 def fetch_page(url):
@@ -216,15 +213,15 @@ def fetch_page(url):
 
 def fetch_data(url: str, opts=None):
     if opts is None:
-        opts = {Options.VERBOSE: False, Options.VERYVERBOSE: False}
+        opts = {Options.V: False, Options.VV: False}
     domain = detect_domain(url)
-    if not opts[Options.VERYVERBOSE]:
+    if not opts[Options.VV]:
         set_logger(logging.INFO)
     driver = fetch_page(url)
     html = driver.page_source
     content = BeautifulSoup(html, features=HTMLPARSER)
     preconditions(url, domain, driver, content)
-    if opts[Options.VERBOSE]:
+    if opts[Options.V]:
         set_logger(logging.DEBUG)
     attrs = fetch_attributes(domain, content)
     postconditions(domain, attrs)

@@ -11,20 +11,24 @@ The following Python packages can be autoinstalled by executing `pip install -r 
 * bs4 (BeautifulSoup)
 
 ### Usage
-This tool uses a command-line interface that receives the desired URL as argument and other flags
+This tool uses a command-line interface that receives the desired URL as argument and other flags. 
 It can be executed by typing:
 
 #### Linux
 `$ python pricelist.py [OPTIONS] URL` \
 or \
 `$ ./pricelist [OPTIONS] URL` \
-in the shell of your liking
+\
+in the shell of your liking.
+
+It will check the URL and return all possible attributes in the page. 
 
 #### Windows
 `> python pricelist.py [OPTIONS] URL` \
 or \
 `> .\pricelist.exe [OPTIONS] URL` \
-in CMD or Powershell
+\
+in CMD or Powershell.
 
 ### Domain dictionary structure
 Each domain has a dictionary with attributes as keys, and each attribute another with HTML components and flags as keys. These are needed to find text for a specific attribute.  
@@ -69,7 +73,8 @@ The best way to add a domain to the domains list (`DomainInfo`) is as follows:
 2. Inspect the page HTML and look for at least three HTML components: `element`, `attribute` and `name`.
 For instance: to find `<h2 class="oBOnKe">Text I really want</h2>`, `h2` is the `element`, `class` the `attribute` and `oBOnKe` the `name`. \
 If the attribute cannot be fetched as it repeats, or changes across different states (i.e. discounted price instead of regular price),
-grab the innermost container that is not repeated, and set the `ISCONTAINER` flag to `true`. This will focus the scope on where the attribute should be.
+previously grab the innermost container of that attribute that is not repeated, and set the `ISCONTAINER` flag to `true`. 
+This will focus the scope on where the attribute should looked for.
 3. Check different products which may modify the position, state or even presence of the attribute you are looking for and adjust the components in the previous step.
 If an element is sometimes present and is preferable over another, it should be closer to the start of the list.
 4. Add the domain to `DomainSupported` partially supported if there is no possible way to extract an attribute.
