@@ -48,7 +48,6 @@ class DomainInfo(Enum):
         attr_dictio = {i: copy.deepcopy(html_dictio) for i in AI}
         match self:
             case DI.ELCORTEINGLES:
-                # TODO In Windows fails
                 # PRODUCT NAME
                 attr_dictio[AI.PROD_NAME][HC.ELEMENT][0] = 'h1'
                 attr_dictio[AI.PROD_NAME][HC.ATTRIBUTE][0] = 'id'

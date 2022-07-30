@@ -1,5 +1,5 @@
 import logging
-from enum import Enum
+from enum import IntEnum
 
 from bs4 import BeautifulSoup, ResultSet
 
@@ -10,7 +10,7 @@ NOT_SUPPORTED = 'Not supported'
 NOT_AVAILABLE = 'Not available'
 
 
-class AttributeInfo(Enum):
+class AttributeInfo(IntEnum):
     """
     Enum that contains all supported extracted attributes.
     For use with fetch data dictionaries.
@@ -18,7 +18,6 @@ class AttributeInfo(Enum):
     PROD_NAME = 0
     BRAND = 1
     PRICE = 2
-
 
     @staticmethod
     def find_text(elements, text):
@@ -93,7 +92,7 @@ class AttributeInfo(Enum):
             return attr
 
 
-class HTMLComponent(Enum):
+class HTMLComponent(IntEnum):
     """
     Enum that contains all HTML elements needed to find attributes in page source.
     For use with DomainParams methods dictionaries.
