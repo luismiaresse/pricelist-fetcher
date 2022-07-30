@@ -1,26 +1,11 @@
-# Selenium (headless browser)
-# from selenium import webdriver
-
 
 from selenium.common.exceptions import WebDriverException, TimeoutException
-# from selenium.webdriver.chrome.options import Options
-
-# Undetected chromedriver (avoid bot detection)
 import undetected_chromedriver as uc
-
-# BeautifulSoup (find info in page source)
 from bs4 import BeautifulSoup
-
-# URL parsing
 from urllib.parse import urlparse
-
-# Parameters and logging
-import argparse
 import logging
-
-# Internal classes
+import tests
 from domains import DomainInfo, DomainInfo as DI
-import data
 from data import AttributeInfo as AI
 from pricelist import Options, set_logger
 import fetch.conditions
@@ -87,102 +72,6 @@ def split_and_join_str(text: str, split_char: str = None, join_char: str | None 
     return string
 
 
-# def preconditions(url: str, domain: DomainInfo, driver: uc.Chrome, source: BeautifulSoup):
-#     """
-#     Executes extra steps for specific websites after getting their page.
-#
-#     :param url: str
-#     :param domain: DomainInfo
-#     :param driver: chromedriver
-#     :param source: BeautifulSoup
-#     :return:
-#     """
-#     match domain:
-#         case DI.ELCORTEINGLES:
-#             pass
-#             # Needed to bypass 5-second timer for bots
-#             # attr_dictio = DI.get_domain_info(DI.ELCORTEINGLES)
-#             # delay = 5
-#             # # Waits -delay- seconds or until -element- is present
-#             # logging.info("Waiting for bot validation...")
-#             # try:
-#             #     WebDriverWait(driver, delay) \
-#             #         .until(EC.presence_of_element_located((By.ID, attr_dictio[AI.PROD_NAME][HC.NAME][0])))
-#             # except TimeoutException:
-#             #     logging.fatal("Timeout: Could not bypass bot detection")
-#             #     exit(1)
-#         case DI.WORTEN:
-#             # Switch price container to marketplace if Worten does not exist
-#             attr_dictio = DI.get_domain_info(DI.WORTEN)
-#             if not source.find(attr_dictio[AI.PRICE][HC.ELEMENT],
-#                                attrs={attr_dictio[AI.PRICE][HC.ATTRIBUTE][0]: attr_dictio[AI.PRICE][HC.NAME][0]}):
-#                 # Price container (marketplace)
-#                 attr_dictio[AI.PRICE][HC.ELEMENT][0] = 'li'
-#                 attr_dictio[AI.PRICE][HC.ATTRIBUTE][0] = 'class'
-#                 attr_dictio[AI.PRICE][HC.NAME][0] = 'accordion-item'
-#                 attr_dictio[AI.PRICE][HC.ISCONTAINER][0] = True
-#                 DI.set_domain_info(DI.WORTEN, attr_dictio)
-#         case DI.NIKE:
-#             if source.find("h1", attrs={"class": re.compile('.*not-found.*')}):
-#                 logging.error("Product is not available or does not exist")
-#                 exit(1)
-#             # Detect if page is SNKRS
-#             if "launch" in url:
-#                 attr_dictio = DI.get_domain_info(DI.NIKE)
-#                 # Product name
-#                 attr_dictio[AI.PROD_NAME][HC.ELEMENT][0] = 'h5'
-#                 attr_dictio[AI.PROD_NAME][HC.ATTRIBUTE][0] = 'data-qa'
-#                 attr_dictio[AI.PROD_NAME][HC.NAME][0] = 'product-title'
-#                 # Sub-brand
-#                 attr_dictio[AI.BRAND][HC.ELEMENT][0] = 'h1'
-#                 attr_dictio[AI.BRAND][HC.ATTRIBUTE][0] = 'class'
-#                 attr_dictio[AI.BRAND][HC.NAME][0] = 'headline-5=small'
-#                 # Price
-#                 attr_dictio[AI.PRICE][HC.ELEMENT][0] = 'div'
-#                 attr_dictio[AI.PRICE][HC.ATTRIBUTE][0] = 'data-qa'
-#                 attr_dictio[AI.PRICE][HC.NAME][0] = 'price'
-#                 attr_dictio[AI.PRICE][HC.ISCONTAINER][0] = False
-#                 DI.set_domain_info(DI.NIKE, attr_dictio)
-
-
-# def postconditions(domain, attrs: dict):
-#     """
-#     Processes data for specific domains.
-#
-#     :param domain: DomainInfo
-#     :param attrs: dict
-#     """
-#     match domain:
-#         case DI.PCCOMPONENTES:
-#             # Remove P/N code and trailing newline from brand
-#             attrs[AI.BRAND] = split_and_join_str(attrs[AI.BRAND], '-', None, 0).rsplit("\n")[0]
-#         case DI.AMAZON:
-#             # Removes spaces before and after product name
-#             attrs[AI.PROD_NAME] = split_and_join_str(attrs[AI.PROD_NAME])
-#             # Removes "Visit the Store of " and "Brand: "
-#             text = str(attrs[AI.BRAND])
-#             if "Marca" in text:
-#                 attrs[AI.BRAND] = text.removeprefix("Marca: ")
-#             else:
-#                 attrs[AI.BRAND] = text.removeprefix("Visita la Store de ")
-#
-#         case DI.ZALANDO:
-#             # Removes 'desde '
-#             if attrs[AI.PRICE] is not None and "desde" in attrs[AI.PRICE]:
-#                 attrs[AI.PRICE] = str(attrs[AI.PRICE]).removeprefix("desde ")
-#             # Removes all after 'IVA'
-#             attrs[AI.PRICE] = re.sub("IVA.*", '', str(attrs[AI.PRICE]))
-#         case DI.NIKE | DI.ADIDAS | DI.CONVERSE:
-#             # Brand is always -Name-
-#             if attrs[AI.BRAND] == data.NOT_SUPPORTED:
-#                 attrs[AI.BRAND] = domain.name
-#     # Common fixes
-#     # Remove whitespaces
-#     attrs[AI.PROD_NAME] = str(attrs[AI.PROD_NAME]).strip()
-#     attrs[AI.BRAND] = str(attrs[AI.BRAND]).strip()
-#     attrs[AI.PRICE] = str(attrs[AI.PRICE]).strip()
-
-
 def fetch_page(url):
     driver = webdriver_init()
     try:
@@ -212,7 +101,7 @@ def fetch_data(url: str = None, opts=None, domain=None):
         opts = {Options.V: False, Options.VV: False}
 
     if domain is not None:
-        url = testURLs[domain]
+        url = tests.testURLs[domain]
     elif url is not None:
         domain = detect_domain(url)
     else:
@@ -230,18 +119,3 @@ def fetch_data(url: str = None, opts=None, domain=None):
     attrs = fetch_attributes(domain, content)
     fetch.conditions.postconditions(domain, attrs)
     return attrs
-
-
-testURLs: dict[DI, str] = {
-    DI.ELCORTEINGLES: "https://www.elcorteingles.es/electronica/A43663538-tv-oled-139-cm-55-sony-xr-55a84k-bravia-google-tv-4k-hdr-xr-cognitive-processor-xr-triluminos-pro-hands-free-voice-search/?color=Negro&parentCategoryId=999.52195013",
-    DI.AMAZON: "https://www.amazon.es/TD-Systems-Televisores-Chromecast-K32DLC16GLE/dp/B09YVJM363",
-    DI.PCCOMPONENTES: "https://www.pccomponentes.com/gigabyte-geforce-rtx-3060-gaming-oc-12gb-gddr6-rev-20",
-    DI.ZALANDO: "https://www.zalando.es/nike-sportswear-air-force-1-gtx-unisex-zapatillas-anthraciteblackbarely-grey-ni115o01u-q11.html",
-    DI.WORTEN: "https://www.worten.es/productos/belleza-salud-y-bebe/salud-belleza/bascula/bascula-agd-precision-agd-joyeria-MRKEAN-8436538305003",
-    DI.CARREFOUR: "https://www.carrefour.es/robot-aspirador-y-friegasuelos-irobot-roomba-combo-r113840/VC4A-12554588/p",
-    DI.NIKE: "https://www.nike.com/es/t/air-force-1-07-zapatillas-DMJP7P/CW2288-111",
-    DI.ADIDAS: "https://www.adidas.es/sudadera-adidas-sportswear-future-icons-3-bandas/HC5255.html",
-    DI.CONVERSE: "https://www.converse.com/es/shop/p/pro-leather-mid-unisex-zapatillas-high-top/169261MP.html",
-    DI.FOOTDISTRICT: "https://footdistrict.com/lourdes-men-s-graphic-t-shirt-lof1xh02ap-je130-113.html",
-    DI.ALIEXPRESS: "https://es.aliexpress.com/item/1005004340051230.html",
-}
