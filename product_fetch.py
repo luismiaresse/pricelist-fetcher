@@ -1,5 +1,7 @@
 # Selenium (headless browser)
 # from selenium import webdriver
+import re
+
 import selenium.common.exceptions
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -85,11 +87,11 @@ def detect_domain(url):
     logging.info("Checking domain " + domain + "...")
     doms = [e for e in DomainInfo]
     for dom in doms:
-        if domain in dom.value or dom.value in domain:
+        if domain in str(dom.value) or str(dom.value) in domain:
             return dom
     else:
-        logging.fatal("Domain not recognized")
-        exit(1)  # TODO: return to GUI
+        logging.error("Domain not recognized")
+        exit(1)
 
 
 def split_and_join_str(text: str, split_char: str = None, join_char: str | None = ' ', word_index: int = None):
@@ -119,7 +121,6 @@ def preconditions(url: str, domain: DomainInfo, driver: uc.Chrome, source: Beaut
             # Needed to bypass 5-second timer for bots
             attr_dictio = DI.get_domain_info(DI.ELCORTEINGLES)
             delay = 5
-            # try:
             # Waits -delay- seconds or until -element- is present
             logging.info("Waiting for bot validation...")
             try:
@@ -127,7 +128,7 @@ def preconditions(url: str, domain: DomainInfo, driver: uc.Chrome, source: Beaut
                     .until(EC.presence_of_element_located((By.ID, attr_dictio[AI.PROD_NAME][HC.NAME][0])))
             except TimeoutException:
                 logging.fatal("Timeout: Could not bypass bot detection")
-                exit(1)  # TODO: return to GUI
+                exit(1)
         case DI.WORTEN:
             # Switch price container to marketplace if Worten does not exist
             attr_dictio = DI.get_domain_info(DI.WORTEN)
@@ -140,6 +141,9 @@ def preconditions(url: str, domain: DomainInfo, driver: uc.Chrome, source: Beaut
                 attr_dictio[AI.PRICE][HC.ISCONTAINER][0] = True
                 DI.set_domain_info(DI.WORTEN, attr_dictio)
         case DI.NIKE:
+            if source.find("h1", attrs={"class": re.compile('.*not-found.*')}):
+                logging.error("Product is not available or does not exist")
+                exit(1)
             # Detect if page is SNKRS
             if "launch" in url:
                 attr_dictio = DI.get_domain_info(DI.NIKE)
@@ -157,6 +161,7 @@ def preconditions(url: str, domain: DomainInfo, driver: uc.Chrome, source: Beaut
                 attr_dictio[AI.PRICE][HC.NAME][0] = 'price'
                 attr_dictio[AI.PRICE][HC.ISCONTAINER][0] = False
                 DI.set_domain_info(DI.NIKE, attr_dictio)
+            delay = 5
 
 
 def postconditions(domain, attrs: dict):
@@ -182,13 +187,16 @@ def postconditions(domain, attrs: dict):
 
         case DI.ZALANDO:
             # Removes 'desde '
-            if "desde" in attrs[AI.PRICE]:
+            if attrs[AI.PRICE] is not None and "desde" in attrs[AI.PRICE]:
                 attrs[AI.PRICE] = str(attrs[AI.PRICE]).removeprefix("desde ")
+            # Removes all after 'IVA'
+            attrs[AI.PRICE] = re.sub("IVA.*", '', str(attrs[AI.PRICE]))
         case DI.NIKE | DI.ADIDAS | DI.CONVERSE:
             # Brand is always -Name-
             if attrs[AI.BRAND] == data.NOT_SUPPORTED:
                 attrs[AI.BRAND] = domain.name
     # Common fixes
+    # Remove whitespaces
     attrs[AI.PROD_NAME] = str(attrs[AI.PROD_NAME]).strip()
     attrs[AI.BRAND] = str(attrs[AI.BRAND]).strip()
     attrs[AI.PRICE] = str(attrs[AI.PRICE]).strip()
@@ -204,7 +212,7 @@ def fetch_page(url):
             driver.get(url)
         except TimeoutException as e:
             logging.fatal(e.msg + " Retry failed.")
-            exit(1)  # TODO: return to GUI
+            exit(1)
     except WebDriverException as e:
         logging.fatal(e.msg)
         exit(1)

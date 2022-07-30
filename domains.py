@@ -15,13 +15,13 @@ class DomainInfo(Enum):
     AMAZON = "www.amazon.es"
     ZALANDO = "www.zalando.es"
     WORTEN = "www.worten.es"
-    ALIEXPRESS = "es.aliexpress.com"
     NIKE = "www.nike.com"
     ADIDAS = "www.adidas.es"
     CONVERSE = "www.converse.com"
     FOOTDISTRICT = "footdistrict.com"
     # Partially supported domains
     CARREFOUR = "www.carrefour.es"
+    ALIEXPRESS = "es.aliexpress.com"
 
     def __init__(self, _):
         self.domain_info_dictio = None
@@ -44,6 +44,7 @@ class DomainInfo(Enum):
         html_dictio = {i: copy.deepcopy(elements) for i in HC}
         for i in range(0, LIST_MAX):
             html_dictio[HC.ISCONTAINER][i] = False
+            html_dictio[HC.GETFIRST][i] = False
         attr_dictio = {i: copy.deepcopy(html_dictio) for i in AI}
         match self:
             case DI.ELCORTEINGLES:
@@ -81,17 +82,15 @@ class DomainInfo(Enum):
                 attr_dictio[AI.BRAND][HC.NAME][0] = 'bylineInfo'
                 # PRICE
                 # Price container
-                attr_dictio[AI.PRICE][HC.ELEMENT][0] = 'div'
-                attr_dictio[AI.PRICE][HC.ATTRIBUTE][0] = 'id'
-                attr_dictio[AI.PRICE][HC.NAME][0] = 'apex_desktop'
+                attr_dictio[AI.PRICE][HC.ELEMENT][0] = 'span'
+                attr_dictio[AI.PRICE][HC.ATTRIBUTE][0] = 'class'
+                attr_dictio[AI.PRICE][HC.NAME][0] = re.compile('(.*apexPriceToPay.*|.*priceToPay.*)')
                 attr_dictio[AI.PRICE][HC.ISCONTAINER][0] = True
                 # Price (new)
                 attr_dictio[AI.PRICE][HC.ELEMENT][1] = 'span'
                 attr_dictio[AI.PRICE][HC.ATTRIBUTE][1] = 'class'
-                attr_dictio[AI.PRICE][HC.NAME][1] = re.compile('.*apexPriceToPay.*')
-                # attr_dictio[AI.PRICE][HC.ELEMENT][1] = 'span'
-                # attr_dictio[AI.PRICE][HC.ATTRIBUTE][1] = 'class'
-                # attr_dictio[AI.PRICE][HC.NAME][1] = 'a-offscreen'
+                attr_dictio[AI.PRICE][HC.NAME][1] = 'a-offscreen'
+                attr_dictio[AI.PRICE][HC.GETFIRST][1] = True
             case DI.PCCOMPONENTES:
                 # PRODUCT NAME
                 attr_dictio[AI.PROD_NAME][HC.ELEMENT][0] = 'h1'
@@ -125,11 +124,6 @@ class DomainInfo(Enum):
                 attr_dictio[AI.PRICE][HC.ELEMENT][0] = 'div'
                 attr_dictio[AI.PRICE][HC.ATTRIBUTE][0] = 'class'
                 attr_dictio[AI.PRICE][HC.NAME][0] = 'Bqz_1C'
-                attr_dictio[AI.PRICE][HC.ISCONTAINER][0] = True
-                # Price
-                attr_dictio[AI.PRICE][HC.ELEMENT][0] = 'p'
-                attr_dictio[AI.PRICE][HC.ATTRIBUTE][0] = 'class'
-                attr_dictio[AI.PRICE][HC.NAME][0] = 'RYghuO uqkIZw dgII7d _88STHx'
             case DI.WORTEN:
                 # PRODUCT NAME
                 attr_dictio[AI.PROD_NAME][HC.ELEMENT][0] = 'h1'
@@ -197,6 +191,7 @@ class DomainInfo(Enum):
                 attr_dictio[AI.PROD_NAME][HC.ELEMENT][0] = 'h1'
                 attr_dictio[AI.PROD_NAME][HC.ATTRIBUTE][0] = 'data-test'
                 attr_dictio[AI.PROD_NAME][HC.NAME][0] = 'product-title'
+                attr_dictio[AI.PROD_NAME][HC.GETFIRST][0] = True
                 # BRAND NOT SUPPORTED (is always Nike)
                 # PRICE
                 # Price container
@@ -270,7 +265,7 @@ class DomainInfo(Enum):
                 attr_dictio[AI.PRICE][HC.NAME][1] = 'price'
             case _:     # Covered by detect_domain(), should never enter here
                 logging.fatal("Domain doesn't match checks")
-                exit(1)     # TODO: return to GUI
+                exit(1)
         return attr_dictio
 
 
@@ -279,5 +274,6 @@ class DomainSupported:
     Used to mark domain support.
     """
     # Add domains to mark them
-    PARTIALLY_SUPPORTED = [DomainInfo.CARREFOUR]  # Domains that can fetch some attributes
-    NOT_SUPPORTED = []                            # Domains that cannot/should not be fetched
+    PARTIALLY_SUPPORTED = [DomainInfo.CARREFOUR,    # Domains that can fetch some attributes
+                           DomainInfo.ALIEXPRESS]
+    NOT_SUPPORTED = []                              # Domains that cannot/should not be fetched

@@ -48,12 +48,19 @@ class AttributeInfo(Enum):
         else:
             search = source  # is ResultSet if index != 0
 
-        if not isinstance(search, ResultSet):  # if there is no text search
+        # is first search and not text search
+        if not isinstance(search, ResultSet):
             matches = search.find_all(dictio[HC.ELEMENT][index], attrs={dictio[HC.ATTRIBUTE][index]: dictio[HC.NAME][index]})
-            if len(matches) > 1 and dictio[HC.ISCONTAINER][index] is False:
-                matches = AI.iterate_tags(dictio, matches, index)
         else:
-            matches = AI.iterate_tags(dictio, search, index)
+            matches = search
+
+        # (is a previous search or (has multiple tags and is not a container)) and is not first search
+        if (isinstance(search, ResultSet) or (len(matches) > 1 and dictio[HC.ISCONTAINER][index] is False)) and index != 0:
+            matches = AI.iterate_tags(dictio, matches, index)
+
+        if dictio[HC.GETFIRST][index] is True:
+            while len(matches) > 1:
+                matches.pop(-1)
         logging.debug("Match: " + str(matches))
         return AI.check_matches(dictio, domain, source, matches, index)
 
@@ -63,9 +70,7 @@ class AttributeInfo(Enum):
         matches = []
         for tag in tags:
             matches = tag.find_all(dictio[HC.ELEMENT][index], attrs={dictio[HC.ATTRIBUTE][index]: dictio[HC.NAME][index]})
-            if len(matches) == 0:
-                pass
-            elif len(matches) == 1:
+            if len(matches) == 1:
                 break
         return matches
 
@@ -75,7 +80,7 @@ class AttributeInfo(Enum):
         if (len(matches) > 1 or dictio[HTMLComponent.ISCONTAINER][index] is True) and index < LIST_MAX and dictio[HTMLComponent.ELEMENT][index + 1] != NULLVAL:
             logging.debug("Trying to find attribute with successive elements")
             return AttributeInfo.find_attribute(dictio, domain, matches, index + 1)
-        # If there are no matches but there are more tags to find
+        # If there are no matches but there are more components to find
         elif len(matches) == 0 and index < LIST_MAX and dictio[HTMLComponent.ELEMENT][index + 1] != NULLVAL:
             logging.debug("Current tag did not return matches. Trying another tag")
             return AttributeInfo.find_attribute(dictio, domain, source, index + 1)
@@ -101,3 +106,5 @@ class HTMLComponent(Enum):
     TEXT = 3
     # Used to check if element is a container
     ISCONTAINER = 4
+    # Ignores multiple findings and uses the first one
+    GETFIRST = 5

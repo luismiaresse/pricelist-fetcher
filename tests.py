@@ -10,7 +10,7 @@ testURLs: dict[DI, str] = {
     DI.ZALANDO: "https://www.zalando.es/nike-sportswear-air-force-1-gtx-unisex-zapatillas-anthraciteblackbarely-grey-ni115o01u-q11.html",
     DI.WORTEN: "https://www.worten.es/productos/belleza-salud-y-bebe/salud-belleza/bascula/bascula-agd-precision-agd-joyeria-MRKEAN-8436538305003",
     DI.CARREFOUR: "https://www.carrefour.es/robot-aspirador-y-friegasuelos-irobot-roomba-combo-r113840/VC4A-12554588/p",
-    DI.NIKE: "https://www.nike.com/es/t/react-infinity-run-flyknit-3-zapatillas-de-running-carretera-lw3Qvh/DH5392-003",
+    DI.NIKE: "https://www.nike.com/es/t/air-force-1-07-zapatillas-DMJP7P/CW2288-111",
     DI.ADIDAS: "https://www.adidas.es/sudadera-adidas-sportswear-future-icons-3-bandas/HC5255.html",
     DI.CONVERSE: "https://www.converse.com/es/shop/p/pro-leather-mid-unisex-zapatillas-high-top/169261MP.html",
     DI.FOOTDISTRICT: "https://footdistrict.com/lourdes-men-s-graphic-t-shirt-lof1xh02ap-je130-113.html",
@@ -30,4 +30,4 @@ class TestClass:
             print("Precio: ", attrs[AI.PRICE])
             for attr in attrs.values():
                 if attr is None:
-                    raise AssertionError(dom.name + " (" + dom.value + ") failed: attribute is None")
+                    raise AssertionError(str(dom.name) + " (" + str(dom.value) + ") failed: attribute is None")
