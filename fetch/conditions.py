@@ -1,42 +1,42 @@
 
-import undetected_chromedriver as uc
-import logging
-import re
 from bs4 import BeautifulSoup
-
-import fetch
-from data import AttributeInfo as AI, HTMLComponent as HC, NOT_SUPPORTED
-from domains import DomainInfo as DI
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+import undetected_chromedriver as uc
+import logging
+import re
+import fetch
+
+AI = fetch.domains.AttributeInfo
+HC = fetch.domains.HTMLComponent
+DI = fetch.domains.DomainInfo
 
 
-def preconditions(url: str, domain: DI, driver: uc.Chrome, source: BeautifulSoup):
+def preconditions(url: str, driver: uc.Chrome, source: BeautifulSoup):
     """
     Executes extra steps for specific websites after getting their page.
 
     :param url: str
-    :param domain: DomainInfo
     :param driver: chromedriver
     :param source: BeautifulSoup
     :return:
     """
-    match domain:
-        case DI.ELCORTEINGLES:
-            pass
-            # Needed to bypass 5-second timer for bots
-            attr_dictio = DI.get_domain_info(DI.ELCORTEINGLES)
-            delay = 5
-            # Waits -delay- seconds or until -element- is present
-            logging.info("Waiting for bot validation...")
-            try:
-                WebDriverWait(driver, delay) \
-                    .until(EC.presence_of_element_located((By.ID, attr_dictio[AI.PROD_NAME][HC.NAME][0])))
-            except TimeoutException:
-                logging.fatal("Timeout: Could not bypass bot detection")
-                exit(1)
+    match fetch.DOMAIN:
+        # case DI.ELCORTEINGLES:
+        #     pass
+        #     # Needed to bypass 5-second timer for bots
+        #     attr_dictio = DI.get_domain_info(DI.ELCORTEINGLES)
+        #     delay = 5
+        #     # Waits -delay- seconds or until -element- is present
+        #     logging.info("Waiting for bot validation...")
+        #     try:
+        #         WebDriverWait(driver, delay) \
+        #             .until(EC.presence_of_element_located((By.ID, attr_dictio[AI.PROD_NAME][HC.NAME][0])))
+        #     except TimeoutException:
+        #         logging.fatal("Timeout: Could not bypass bot detection")
+        #         exit(1)
         case DI.WORTEN:
             # Switch price container to marketplace if Worten does not exist
             attr_dictio = DI.get_domain_info(DI.WORTEN)
@@ -58,7 +58,7 @@ def preconditions(url: str, domain: DI, driver: uc.Chrome, source: BeautifulSoup
                 # Product name
                 attr_dictio[AI.PROD_NAME][HC.ELEMENT][0] = 'h5'
                 attr_dictio[AI.PROD_NAME][HC.ATTRIBUTE][0] = 'data-qa'
-                attr_dictio[AI.PROD_NAME][HC.NAME][0] = 'product-title'
+                attr_dictio[AI.PROD_NAME][HC.NAME][0] = 'classes-title'
                 # Sub-brand
                 attr_dictio[AI.BRAND][HC.ELEMENT][0] = 'h1'
                 attr_dictio[AI.BRAND][HC.ATTRIBUTE][0] = 'class'
@@ -71,19 +71,18 @@ def preconditions(url: str, domain: DI, driver: uc.Chrome, source: BeautifulSoup
                 DI.set_domain_info(DI.NIKE, attr_dictio)
 
 
-def postconditions(domain, attrs: dict):
+def postconditions(attrs: dict):
     """
     Processes data for specific domains.
 
-    :param domain: DomainInfo
     :param attrs: dict
     """
-    match domain:
+    match fetch.DOMAIN:
         case DI.PCCOMPONENTES:
             # Remove P/N code and trailing newline from brand
             attrs[AI.BRAND] = fetch.split_and_join_str(attrs[AI.BRAND], '-', None, 0).rsplit("\n")[0]
         case DI.AMAZON:
-            # Removes spaces before and after product name
+            # Removes spaces before and after classes name
             attrs[AI.PROD_NAME] = fetch.split_and_join_str(attrs[AI.PROD_NAME])
             # Removes "Visit the Store of " and "Brand: "
             text = str(attrs[AI.BRAND])
@@ -100,8 +99,8 @@ def postconditions(domain, attrs: dict):
             attrs[AI.PRICE] = re.sub("IVA.*", '', str(attrs[AI.PRICE]))
         case DI.NIKE | DI.ADIDAS | DI.CONVERSE:
             # Brand is always -Name-
-            if attrs[AI.BRAND] == NOT_SUPPORTED:
-                attrs[AI.BRAND] = domain.name
+            if attrs[AI.BRAND] == fetch.NOT_SUPPORTED:
+                attrs[AI.BRAND] = fetch.DOMAIN.name
     # Common fixes
     # Remove whitespaces
     attrs[AI.PROD_NAME] = str(attrs[AI.PROD_NAME]).strip()

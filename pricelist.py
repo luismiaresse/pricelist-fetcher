@@ -1,8 +1,7 @@
-
-import data
 import argparse
 import logging
 import fetch
+import database as db
 
 
 def setup_parser():
@@ -35,12 +34,14 @@ if __name__ == '__main__':
         set_logger(logging.DEBUG)
     else:
         set_logger(logging.INFO)
-    attrs = fetch.fetch_data(args.url, opts)
-    keys = [i.value for i in attrs.keys()]
-    values = list(attrs.values())
-    dat = {keys[i]: values[i] for i in attrs}
-    # data = pd.DataFrame.from_dict(attrs)
-    print("Producto: ", attrs[0])
-    print("Marca: ", attrs[data.AttributeInfo.BRAND])
-    print("Precio: ", attrs[data.AttributeInfo.PRICE])
-
+    (prod, dom, pricing) = fetch.fetch_data(args.url, opts)
+    print(prod, dom, pricing)
+    # try:
+    if db.dbsecrets.DBCreds.URL is not None:
+        db.insert_product(prod, dom, pricing)
+    else:
+        logging.error("""No database credentials found. Skipping lowest recorded price...
+        If you want to use this feature, please check database/dbsecrets.py,
+        or use release binary.""")
+    # except Exception as e:
+    #     logging.error("Could not connect to DB with provided credentials")

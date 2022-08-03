@@ -1,6 +1,6 @@
 import fetch
-import data
-from domains import DomainInfo as DI
+AI = fetch.AI
+DI = fetch.DI
 
 testURLs: dict[DI, str] = {
     DI.ELCORTEINGLES: "https://www.elcorteingles.es/electronica/A43663538-tv-oled-139-cm-55-sony-xr-55a84k-bravia-google-tv-4k-hdr-xr-cognitive-processor-xr-triluminos-pro-hands-free-voice-search/?color=Negro&parentCategoryId=999.52195013",
@@ -20,7 +20,6 @@ testURLs: dict[DI, str] = {
 class TestClass:
     # Test if any attribute is missing
     def test_domains(self):
-        AI = data.AttributeInfo
         for dom, url in testURLs.items():
             attrs = fetch.fetch_data(url)
             print("\nDominio: ", dom.name)

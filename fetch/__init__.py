@@ -4,14 +4,26 @@ import undetected_chromedriver as uc
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import logging
-import tests
-from domains import DomainInfo, DomainInfo as DI
-from data import AttributeInfo as AI
-from pricelist import Options, set_logger
-import fetch.conditions
+
+import fetch.domains as doms
+import pricelist as pl
+import fetch.conditions as cond
+import classes
+
+AI = doms.AttributeInfo
+DI = doms.DomainInfo
+HC = doms.HTMLComponent
+TLDI = doms.TLDInfo
 
 # Constants
 HTMLPARSER = "html.parser"
+NULLVAL = 'null'                        # Non-existent value in list
+LIST_MAX = 5                            # Maximum number of elements in each html component list
+NOT_SUPPORTED = 'Not supported'
+NOT_AVAILABLE = -1.00                    # Price when classes is not available
+DOMAINS_PATH = 'fetch/domains.json'
+DOMAIN: DI = None                       # Extracted domain from URL
+TLD: TLDI = None                        # Extracted top-level domain from URL
 
 
 def webdriver_init():
@@ -27,34 +39,50 @@ def webdriver_init():
     return driver
 
 
-def fetch_attributes(domain, source: BeautifulSoup):
+def fetch_attributes(source: BeautifulSoup):
     """
     Gets all existing attributes
 
-    :param domain:
     :param source:
     :return:
     """
-    dictio = DI.get_domain_info(domain)
+    dictio = DI.get_domain_info(DOMAIN)
     attributes = [e for e in AI]
     for attr in attributes:
-        dictio[attr] = AI.find_attribute(dictio[attr], domain, source=source)
+        dictio[attr] = AI.find_attribute(dictio[attr], source=source)
     return dictio
 
 
-def detect_domain(url):
+def detect_tld(domain: str):
+    """
+    Detects top-level domain from URL
+    :param domain: str
+    :return: tld: TLDInfo
+    """
+    global TLD
+    tlds = [e for e in TLDI]
+    for tld in tlds:
+        if str(tld.value) in domain:
+            TLD = TLDI(tld)
+
+
+def detect_domain(url: str):
     """
     Checks domain of URL in the supported domains enum and returns it.
 
-    :param url:
-    :return: domain
+    :param url: str
+    :return: domain: DomainInfo
     """
+    global DOMAIN
+    global TLD
     domain = urlparse(url).netloc
+    detect_tld(domain)
     logging.info("Checking domain " + domain + "...")
-    doms = [e for e in DomainInfo]
-    for dom in doms:
-        if domain in str(dom.value) or str(dom.value) in domain:
-            return dom
+    domains = [e for e in DI]
+    for d in domains:
+        if domain in str(d.value) or str(d.value) in domain:
+            DOMAIN = d
+            return d
     else:
         logging.error("Domain not recognized")
         exit(1)
@@ -89,33 +117,27 @@ def fetch_page(url):
     return driver
 
 
-def fetch_data(url: str = None, opts=None, domain=None):
+def fetch_data(url: str = None, opts=None):
     """
     Main function to fetch URLs. domain parameter useful for debugging
     :param url: str
     :param opts:
-    :param domain:
-    :return:
+    :return: prod: Product
     """
     if opts is None:
-        opts = {Options.V: False, Options.VV: False}
-
-    if domain is not None:
-        url = tests.testURLs[domain]
-    elif url is not None:
-        domain = detect_domain(url)
-    else:
-        logging.error("URL not provided")
-        exit(1)
-
-    if not opts[Options.VV]:
-        set_logger(logging.INFO)
+        opts = {pl.Options.V: False, pl.Options.VV: False}
+    if not opts[pl.Options.VV]:
+        pl.set_logger(logging.INFO)
+    detect_domain(url)
     driver = fetch_page(url)
     html = driver.page_source
     content = BeautifulSoup(html, features=HTMLPARSER)
-    fetch.conditions.preconditions(url, domain, driver, content)
-    if opts[Options.V]:
-        set_logger(logging.DEBUG)
-    attrs = fetch_attributes(domain, content)
-    fetch.conditions.postconditions(domain, attrs)
-    return attrs
+    cond.preconditions(url, driver, content)
+    if opts[pl.Options.V]:
+        pl.set_logger(logging.DEBUG)
+    data = fetch_attributes(content)
+    cond.postconditions(data)
+    prod = classes.Product(name=data[AI.PROD_NAME], brand=data[AI.BRAND])
+    dom = classes.Domain(name=DOMAIN.name, tld=TLD.name)
+    pricing = classes.Pricing(pricetag=data[AI.PRICE])
+    return prod, dom, pricing

@@ -1,0 +1,42 @@
+{
+  "elcorteingles": {
+    "es": {
+      "prod_name" : {
+      "element": ["h1"],
+      "attribute": ["id"],
+      "name": ["js-product-detail-title"]
+      },
+      "brand": {
+          "element": ["a"],
+          "attribute": ["class"],
+          "name": ["product_detail-brand"]
+      },
+      "price": {
+          "element": ["div", "p", "p"],
+          "attribute": ["class", "class", "class"],
+          "name": ["product_detail-buy-price-container", "price _big", "price _big _sale"],
+          "iscontainer": [true, false, false]
+      }
+    },
+
+    "com": {
+
+    }
+
+  },
+
+
+
+  "amazon": {
+
+  },
+
+  "pccomponentes": {
+
+  },
+
+  "zalando": {
+
+  }
+
+}
