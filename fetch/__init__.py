@@ -18,9 +18,9 @@ TLDI = doms.TLDInfo
 # Constants
 HTMLPARSER = "html.parser"
 NULLVAL = 'null'                        # Non-existent value in list
-LIST_MAX = 5                            # Maximum number of elements in each html component list
+# LIST_MAX = 5                          # Maximum number of elements in each html component list
 NOT_SUPPORTED = 'Not supported'
-NOT_AVAILABLE = -1.00                    # Price when classes is not available
+NOT_AVAILABLE = -1.00                   # Price when classes is not available
 DOMAINS_PATH = 'fetch/domains.json'
 DOMAIN: DI = None                       # Extracted domain from URL
 TLD: TLDI = None                        # Extracted top-level domain from URL
@@ -49,7 +49,10 @@ def fetch_attributes(source: BeautifulSoup):
     dictio = DI.get_domain_info(DOMAIN)
     attributes = [e for e in AI]
     for attr in attributes:
-        dictio[attr] = AI.find_attribute(dictio[attr], source=source)
+        if attr in dictio.keys():
+            dictio[attr] = AI.find_attribute(dictio[attr], source=source)
+        else:
+            dictio[attr] = NOT_SUPPORTED
     return dictio
 
 
@@ -62,7 +65,7 @@ def detect_tld(domain: str):
     global TLD
     tlds = [e for e in TLDI]
     for tld in tlds:
-        if str(tld.value) in domain:
+        if str(tld.value) in domain.split('.'):
             TLD = TLDI(tld)
 
 
@@ -137,7 +140,7 @@ def fetch_data(url: str = None, opts=None):
         pl.set_logger(logging.DEBUG)
     data = fetch_attributes(content)
     cond.postconditions(data)
-    prod = classes.Product(name=data[AI.PROD_NAME], brand=data[AI.BRAND])
+    prod = classes.Product(name=data[AI.PROD_NAME], brand=data[AI.BRAND], category=data[AI.CATEGORY])
     dom = classes.Domain(name=DOMAIN.name, tld=TLD.name)
     pricing = classes.Pricing(pricetag=data[AI.PRICE])
     return prod, dom, pricing

@@ -1,21 +1,30 @@
 import logging
 import os.path as path
+import warnings
+
 import psycopg          # PostgreSQL driver
 import classes
 import pandas as pd
 
 DBSECRETS_PATH = "database/dbsecrets.py"
-ALT_DBSECRETS_PATH = "database/dbsecrets-dummy.py"
 
 if path.exists(DBSECRETS_PATH):
     import database.dbsecrets
 
 
+# TODO Prevent too many requests by updating date/time by an interval
+#  If price is unchanged and now() - last_update < interval, do not update date/time
+#  Otherwise, update date/time
 def insert_product(prod: classes.Product, dom: classes.Domain, pricing: classes.Pricing):
     with psycopg.connect(dbsecrets.DBCreds.URL) as con:
         # Open a cursor to perform database operations
         with con.cursor() as cur:
             con.autocommit = False
+
+            # Escape quotes in strings
+            prod.name = prod.name.replace("'", "''")
+            prod.brand = prod.brand.replace("'", "''")
+
             # Get latest price of classes
             query = f"""
                     SELECT "prod_name", "price", "day", "hour"
@@ -23,6 +32,8 @@ def insert_product(prod: classes.Product, dom: classes.Domain, pricing: classes.
                     WHERE "prod_name" = '{prod.name}' AND "dom_name" = '{dom.name}' AND "currency" = '{pricing.currency}'
                     ORDER BY "day" DESC, "hour" DESC
                     """
+
+            warnings.simplefilter("ignore")
             dictio = pd.read_sql_query(query, con)      # TODO Use SQLAlchemy 2.0 to avoid warning (not possible at the moment)
 
             # If latest price is unchanged return
@@ -44,7 +55,7 @@ def insert_product(prod: classes.Product, dom: classes.Domain, pricing: classes.
                 try:
                     cur.execute("SAVEPOINT sp2")
                     cur.execute(f"""
-                            INSERT INTO public.products VALUES ('{prod.name}', '{prod.brand}')
+                            INSERT INTO public.products VALUES ('{prod.name}', '{prod.brand}', '{prod.category}')
                             """)
                 except Exception as e:
                     logging.debug(f"Could not insert product {prod.name} into DB: {e}")
@@ -77,6 +88,8 @@ def get_lowest_price(prod: classes.Product, dom: classes.Domain, pricing: classe
                     WHERE "prod_name" = '{prod.name}' AND "dom_name" = '{dom.name}' AND "currency" = '{pricing.currency}'
                     ORDER BY "price" ASC
                     """
+
+            warnings.simplefilter("ignore")
             dictio = pd.read_sql_query(query, con)      # TODO Use SQLAlchemy 2.0 to avoid warning (not possible at the moment)
 
             # If no price history return

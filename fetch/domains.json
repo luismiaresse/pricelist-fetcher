@@ -1,42 +1,226 @@
 {
   "elcorteingles": {
     "es": {
-      "prod_name" : {
-      "element": ["h1"],
-      "attribute": ["id"],
-      "name": ["js-product-detail-title"]
-      },
-      "brand": {
-          "element": ["a"],
-          "attribute": ["class"],
-          "name": ["product_detail-brand"]
-      },
-      "price": {
-          "element": ["div", "p", "p"],
-          "attribute": ["class", "class", "class"],
-          "name": ["product_detail-buy-price-container", "price _big", "price _big _sale"],
-          "iscontainer": [true, false, false]
-      }
-    },
-
-    "com": {
-
+        "prod_name" : {
+            "element": ["h1"],
+            "attribute": ["id"],
+            "name": ["js-product-detail-title"]
+        },
+        "brand": {
+            "element": ["a"],
+            "attribute": ["class"],
+            "name": ["product_detail-brand"]
+        },
+        "price": {
+            "element": ["div", "p", "p"],
+            "attribute": ["class", "class", "class"],
+            "name": ["product_detail-buy-price-container", "price _big", "price _big _sale"],
+            "iscontainer": [true, false, false],
+            "desc": ["Price container", "Regular price", "Discounted price"]
+        }
     }
-
   },
 
 
 
   "amazon": {
-
+    "es": {
+        "prod_name" : {
+            "element": ["span"],
+            "attribute": ["id"],
+            "name": ["productTitle"]
+        },
+        "brand": {
+            "element": ["a"],
+            "attribute": ["id"],
+            "name": ["bylineInfo"]
+        },
+        "price": {
+            "element": ["span", "span"],
+            "attribute": ["class", "class"],
+            "name": ["(.*apexPriceToPay.*|.*priceToPay.*)","a-offscreen"],
+            "iscontainer": [true, false],
+            "getfirst": [false, true],
+            "desc": ["Price container", "Price (new)"]
+        }
+    }
   },
 
   "pccomponentes": {
-
+    "com": {
+        "prod_name" : {
+            "element": ["h1"],
+            "attribute": ["class"],
+            "name": ["h4"]
+        },
+        "brand": {
+            "element": ["div", "div"],
+            "attribute": ["class", "class"],
+            "name": ["ficha-producto__datos-de-compra white-card-movil", "col-xs-12 col-sm-9"],
+            "iscontainer": [true, false],
+            "desc": ["Product data container", "Brand row"]
+        },
+        "price": {
+            "element": ["div"],
+            "attribute": ["id"],
+            "name": ["precio-main"],
+            "iscontainer": [false],
+            "getfirst": [true]
+        }
+    }
   },
 
   "zalando": {
+    "es": {
+        "prod_name" : {
+            "element": ["span"],
+            "attribute": ["class"],
+            "name": ["EKabf7 R_QwOV"]
+        },
+        "brand": {
+            "element": ["h3"],
+            "attribute": ["class"],
+            "name": ["SZKKsK mt1kvu FxZV-M pVrzNP _5Yd-hZ"]
+        },
+        "price": {
+            "element": ["div"],
+            "attribute": ["class"],
+            "name": ["Bqz_1C"]
+        }
+    }
+  },
 
+  "worten": {
+    "es": {
+        "prod_name" : {
+            "element": ["h1"],
+            "attribute": ["class"],
+            "name": ["w-product__name iss-classes-name"]
+        },
+        "brand": {
+            "element": ["li", "span"],
+            "attribute": ["class", "class"],
+            "name": ["clearfix", "details-value"],
+            "text": [null, "Marca"],
+            "iscontainer": [true, false],
+            "desc": ["Info container", "Brand"]
+        },
+        "price": {
+            "element": ["span", "span"],
+            "attribute": ["class", "class"],
+            "name": ["w-product__price__current iss-product-current-price", "product-offers__price-title"],
+            "desc": ["Price container", "Price (new)"]
+        }
+    }
+  },
+
+  "carrefour": {
+    "es": {
+        "prod_name" : {
+            "element": ["h1"],
+            "attribute": ["class"],
+            "name": ["product-header__name"]
+        },
+        "price": {
+            "element": ["div", "span", "span"],
+            "attribute": ["class", "class", "class"],
+            "name": ["buybox", "buybox__price", "buybox__price--current"],
+            "iscontainer": [true, false, false],
+            "desc": ["Seller container", "Regular price", "Discounted price"]
+        }
+    }
+  },
+
+  "aliexpress": {
+    "com": {
+        "prod_name" : {
+            "element": ["h1"],
+            "attribute": ["class"],
+            "name": ["product-title-text"]
+        },
+        "price": {
+            "element": ["div", "span"],
+            "attribute": ["class", "class"],
+            "name": ["uniform-banner", "uniform-banner-box-price"],
+            "iscontainer": [true, false],
+            "desc": ["Price container", "Price"]
+        }
+    }
+  },
+
+  "nike": {
+    "com": {
+        "prod_name" : {
+            "element": ["h1"],
+            "attribute": ["data-test"],
+            "name": ["product-title"],
+            "getfirst": [true]
+        },
+        "price": {
+            "element": ["div", "div", "div"],
+            "attribute": ["class", "data-test", "data-test"],
+            "name": ["product-price__wrapper css-13hq5b3", "product-price-reduced", "product-price"],
+            "iscontainer": [true, false, false],
+            "desc": ["Price container", "Discounted price", "Regular price"]
+        }
+    }
+  },
+
+
+  "adidas": {
+    "es": {
+        "prod_name" : {
+            "element": ["h1"],
+            "attribute": ["data-testid"],
+            "name": ["product-title"]
+        },
+        "price": {
+            "element": ["div", "div", "div"],
+            "attribute": ["class", "class", "class"],
+            "name": ["product-description___2cJO2", "gl-price-item gl-price-item--sale notranslate", "gl-price-item notranslate"],
+            "iscontainer": [true, false, false],
+            "desc": ["Price container", "Discounted price", "Regular price"]
+        }
+    }
+  },
+
+  "converse": {
+    "com": {
+        "prod_name" : {
+            "element": ["h1"],
+            "attribute": ["itemprop"],
+            "name": ["name"]
+        },
+        "price": {
+            "element": ["div", "span"],
+            "attribute": ["itemprop", "itemprop"],
+            "name": ["offers", "price"],
+            "iscontainer": [true, false],
+            "desc": ["Price container", "Price"]
+        }
+    }
+  },
+
+  "footdistrict": {
+    "com": {
+        "prod_name" : {
+            "element": ["span"],
+            "attribute": ["data-ui-id"],
+            "name": ["page-title-wrapper"]
+        },
+        "brand": {
+            "element": ["div"],
+            "attribute": ["class"],
+            "name": ["amshopby-option-link"]
+        },
+        "price": {
+            "element": ["div", "span"],
+            "attribute": ["class", "class"],
+            "name": ["product-info-price", "price"],
+            "iscontainer": [true, false, false],
+            "desc": ["Price container", "Price"]
+        }
+    }
   }
 
 }

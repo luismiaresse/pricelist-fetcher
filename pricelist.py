@@ -36,12 +36,13 @@ if __name__ == '__main__':
         set_logger(logging.INFO)
     (prod, dom, pricing) = fetch.fetch_data(args.url, opts)
     print(prod, dom, pricing)
+    # TODO Check with individual credentials
     # try:
     if db.dbsecrets.DBCreds.URL is not None:
         db.insert_product(prod, dom, pricing)
     else:
         logging.error("""No database credentials found. Skipping lowest recorded price...
-        If you want to use this feature, please check database/dbsecrets.py,
+        If you want to use this feature, please add your database to database/dbsecrets.py,
         or use release binary.""")
     # except Exception as e:
     #     logging.error("Could not connect to DB with provided credentials")

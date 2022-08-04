@@ -1,15 +1,17 @@
 
 
 class Product:
-    def __init__(self, name: str, brand: str = None):
+    def __init__(self, name: str, brand: str = None, category: str = None):
         self.name = name
         self.brand = brand
+        self.category = category
 
     def __str__(self):
         return f"""
         Product:
-        - Name:   {self.name}
-        - Brand:  {self.brand}
+        - Name:         {self.name}
+        - Brand:        {self.brand}
+        - Category:     {self.category}
         """
 
 
@@ -21,8 +23,8 @@ class Domain:
     def __str__(self):
         return f"""
         Domain:
-        - Name:   {self.name}
-        - TLD:    {self.tld}
+        - Name:         {self.name}
+        - TLD:          {self.tld}
         """
 
 

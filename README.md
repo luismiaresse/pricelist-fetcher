@@ -13,6 +13,7 @@ The following Python packages can be autoinstalled by executing `pip install -r 
 * bs4 (BeautifulSoup)
 * pandas
 * psycopg (database connection, can be another if database is not PostgreSQL)
+* 
 
 ### Usage
 This tool uses a command-line interface that receives the desired URL as argument and other flags. 

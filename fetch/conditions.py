@@ -46,6 +46,7 @@ def preconditions(url: str, driver: uc.Chrome, source: BeautifulSoup):
                 attr_dictio[AI.PRICE][HC.ELEMENT][0] = 'li'
                 attr_dictio[AI.PRICE][HC.ATTRIBUTE][0] = 'class'
                 attr_dictio[AI.PRICE][HC.NAME][0] = 'accordion-item'
+                attr_dictio[AI.PRICE][HC.ISCONTAINER] = [True, False]
                 attr_dictio[AI.PRICE][HC.ISCONTAINER][0] = True
                 DI.set_domain_info(DI.WORTEN, attr_dictio)
         case DI.NIKE:
