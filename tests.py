@@ -20,12 +20,11 @@ testURLs: dict[DI, str] = {
 class TestClass:
     # Test if any attribute is missing
     def test_domains(self):
-        for dom, url in testURLs.items():
-            attrs = fetch.fetch_data(url)
-            print("\nDominio: ", dom.name)
-            print("Producto: ", attrs[AI.PROD_NAME])
-            print("Marca: ", attrs[AI.BRAND])
-            print("Precio: ", attrs[AI.PRICE])
-            for attr in attrs.values():
-                if attr is None:
-                    raise AssertionError(str(dom.name) + " (" + str(dom.value) + ") failed: attribute is None")
+        for url in testURLs.values():
+            (prod, dom, pricing) = fetch.fetch_data(url)
+            print(prod, dom, pricing)
+            for dictio in (prod.__dict__, dom.__dict__, pricing.__dict__):
+                for val in dictio.values():
+                    if val is None:
+                        raise AssertionError(str(dom.name) + str(dom.tld) + " failed: attribute is None")
+
