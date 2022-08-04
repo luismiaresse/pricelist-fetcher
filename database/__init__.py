@@ -1,6 +1,6 @@
 import logging
-import os.path as path
 import warnings
+import database.dbsecrets
 
 import psycopg          # PostgreSQL driver
 import classes
@@ -8,8 +8,6 @@ import pandas as pd
 
 DBSECRETS_PATH = "database/dbsecrets.py"
 
-if path.exists(DBSECRETS_PATH):
-    import database.dbsecrets
 
 
 # TODO Prevent too many requests by updating date/time by an interval
