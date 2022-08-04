@@ -9,7 +9,6 @@ import pandas as pd
 DBSECRETS_PATH = "database/dbsecrets.py"
 
 
-
 # TODO Prevent too many requests by updating date/time by an interval
 #  If price is unchanged and now() - last_update < interval, do not update date/time
 #  Otherwise, update date/time
