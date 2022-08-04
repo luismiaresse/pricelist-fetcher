@@ -102,6 +102,10 @@ def postconditions(attrs: dict):
             # Brand is always -Name-
             if attrs[AI.BRAND] == fetch.NOT_SUPPORTED:
                 attrs[AI.BRAND] = fetch.DOMAIN.name
+        case DI.ALIEXPRESS:
+            # Gets the lower price
+            if attrs[AI.PRICE] is not None:
+                attrs[AI.PRICE] = str(attrs[AI.PRICE]).split("-")[0]
     # Common fixes
     # Remove whitespaces
     attrs[AI.PROD_NAME] = str(attrs[AI.PROD_NAME]).strip()

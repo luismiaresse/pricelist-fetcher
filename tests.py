@@ -24,6 +24,6 @@ class TestClass:
             print(prod, dom, pricing)
             for dictio in (prod.__dict__, dom.__dict__, pricing.__dict__):
                 for val in dictio.values():
-                    if val is None:
+                    if val is None or val == "" or val == "None":
                         raise AssertionError(str(dom.name) + "." + str(dom.tld) + " failed: attribute is None")
 

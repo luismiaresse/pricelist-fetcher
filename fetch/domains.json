@@ -95,7 +95,7 @@
         "prod_name" : {
             "element": ["h1"],
             "attribute": ["class"],
-            "name": ["w-product__name iss-classes-name"]
+            "name": ["w-product__name iss-product-name"]
         },
         "brand": {
             "element": ["li", "span"],
@@ -132,7 +132,7 @@
   },
 
   "aliexpress": {
-    "com": {
+    "es": {
         "prod_name" : {
             "element": ["h1"],
             "attribute": ["class"],
@@ -193,8 +193,8 @@
         },
         "price": {
             "element": ["div", "span"],
-            "attribute": ["itemprop", "itemprop"],
-            "name": ["offers", "price"],
+            "attribute": ["class", "class"],
+            "name": ["product-price", "product-price--sales"],
             "iscontainer": [true, false],
             "desc": ["Price container", "Price"]
         }
