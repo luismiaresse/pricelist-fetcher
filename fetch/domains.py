@@ -15,6 +15,7 @@ class AttributeInfo(Enum):
     # Optional attributes
     BRAND = "brand"
     CATEGORY = "category"
+    SHIPPING = "shipping"
 
     @staticmethod
     def find_text(elements, text):
@@ -36,9 +37,7 @@ class AttributeInfo(Enum):
         # Aliases for convenience
         HC = HTMLComponent
         AI = AttributeInfo
-        if dictio[HC.ELEMENT][0] == fetch.NULLVAL:
-            return fetch.NOT_SUPPORTED
-        if HC.TEXT in dictio.keys() and dictio[HC.TEXT][index] != fetch.NULLVAL:
+        if HC.TEXT in dictio.keys() and dictio[HC.TEXT][index] != fetch.NULLVAL_STR:
             search = AI.find_text(source, dictio[HC.TEXT])  # is Tag
         else:
             search = source  # is ResultSet if index != 0
@@ -74,11 +73,11 @@ class AttributeInfo(Enum):
         HC = HTMLComponent
         listsize = len(dictio[HC.ELEMENT])
         # If there is more than 1 match or current tag is from a container
-        if (len(matches) > 1 or (HC.ISCONTAINER in dictio.keys() and dictio[HC.ISCONTAINER][index] is True)) and index + 1 < listsize and dictio[HC.ELEMENT][index + 1] != fetch.NULLVAL:
+        if (len(matches) > 1 or (HC.ISCONTAINER in dictio.keys() and dictio[HC.ISCONTAINER][index] is True)) and index + 1 < listsize:
             logging.debug("Trying to find attribute with successive elements")
             return AttributeInfo.find_attribute(dictio, matches, index + 1)
         # If there are no matches but there are more components to find
-        elif len(matches) == 0 and index + 1 < listsize and dictio[HC.ELEMENT][index + 1] != fetch.NULLVAL:
+        elif len(matches) == 0 and index + 1 < listsize:
             logging.debug("Current tag did not return matches. Trying another tag")
             return AttributeInfo.find_attribute(dictio, source, index + 1)
         # If there are no matches
@@ -111,9 +110,10 @@ class TLDInfo(Enum):
     Supported TLDs (top-level domains).
     """
     COM = "com"
+    NET = "net"
     ES = "es"
     FR = "fr"
-    CO_UK = "uk"
+    UK = "uk"
     DE = "de"
     IT = "it"
     NL = "nl"
@@ -169,14 +169,3 @@ class DomainInfo(Enum):
 
                     data[attrkeys[attr]] = data.pop(attr)
         return data
-
-
-class DomainSupported:
-    """
-    Used to mark domain support.
-    """
-    DI = DomainInfo
-    # Add domains to mark them
-    PARTIALLY_SUPPORTED = [DI.CARREFOUR,            # Domains that can fetch some attributes
-                           DI.ALIEXPRESS]
-    NOT_SUPPORTED = []                              # Domains that cannot/should not be fetched

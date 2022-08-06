@@ -1,0 +1,12 @@
+{
+  "example":{
+    "tlds": "*",
+    "reason": "Restricted by owner"
+  },
+
+  "example2":{
+    "tlds": ["com", "net"],
+    "reason": "Restricted by owner"
+  }
+
+}

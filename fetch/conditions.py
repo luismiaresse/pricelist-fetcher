@@ -108,6 +108,10 @@ def postconditions(attrs: dict):
                 attrs[AI.PRICE] = str(attrs[AI.PRICE]).split("-")[0]
     # Common fixes
     # Remove whitespaces
-    attrs[AI.PROD_NAME] = str(attrs[AI.PROD_NAME]).strip()
-    attrs[AI.BRAND] = str(attrs[AI.BRAND]).strip()
-    attrs[AI.PRICE] = str(attrs[AI.PRICE]).strip()
+    fetch.remove_key_whitespaces(attrs)
+    # Change str to float
+    if attrs[AI.SHIPPING] == fetch.NOT_SUPPORTED:
+        attrs[AI.SHIPPING] = fetch.NULLVAL_NUM
+
+
+

@@ -17,13 +17,13 @@ TLDI = doms.TLDInfo
 
 # Constants
 HTMLPARSER = "html.parser"
-NULLVAL = 'null'                        # Non-existent value in list
-# LIST_MAX = 5                          # Maximum number of elements in each html component list
-NOT_SUPPORTED = 'Not supported'
-NOT_AVAILABLE = -1.00                   # Price when classes is not available
-DOMAINS_PATH = 'fetch/domains.json'
-DOMAIN: DI = None                       # Extracted domain from URL
-TLD: TLDI = None                        # Extracted top-level domain from URL
+# Null values for string and numeric types
+NULLVAL_STR = 'null'
+NULLVAL_NUM = -1.00
+NOT_SUPPORTED = 'Unknown'
+DOMAINS_PATH = 'config/domains.json'
+DOMAIN: DI | None = None                       # Extracted domain from URL
+TLD: TLDI | None = None                        # Extracted top-level domain from URL
 
 
 def webdriver_init():
@@ -32,6 +32,7 @@ def webdriver_init():
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--log-level=3')
+    chrome_options.add_argument('--disable-extensions')
     # chrome_options.add_argument('--user-agent= Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:70.0) Gecko/20100101 Firefox/70.0')
     # chrome_options.add_argument('--disable-dev-shm-usage')
     driver = uc.Chrome(options=chrome_options)
@@ -59,6 +60,7 @@ def fetch_attributes(source: BeautifulSoup):
 def detect_tld(domain: str):
     """
     Detects top-level domain from URL
+
     :param domain: str
     :return: tld: TLDInfo
     """
@@ -103,6 +105,11 @@ def split_and_join_str(text: str, split_char: str = None, join_char: str | None 
     return string
 
 
+def remove_key_whitespaces(dictio: dict):
+    for key in dictio.keys():
+        dictio[key] = str(dictio[key]).strip()
+
+
 def fetch_page(url):
     driver = webdriver_init()
     try:
@@ -138,9 +145,10 @@ def fetch_data(url: str = None, opts=None):
     cond.preconditions(url, driver, content)
     if opts[pl.Options.V]:
         pl.set_logger(logging.DEBUG)
-    data = fetch_attributes(content)
-    cond.postconditions(data)
-    prod = classes.Product(name=data[AI.PROD_NAME], brand=data[AI.BRAND], category=data[AI.CATEGORY])
+    attrs = fetch_attributes(content)
+    cond.postconditions(attrs)
+    prod = classes.Product(name=attrs[AI.PROD_NAME], brand=attrs[AI.BRAND], category=attrs[AI.CATEGORY])
     dom = classes.Domain(name=DOMAIN.name, tld=TLD.name)
-    pricing = classes.Pricing(pricetag=data[AI.PRICE])
-    return prod, dom, pricing
+    pricing = classes.Pricing(pricetag=attrs[AI.PRICE], shipping=attrs[AI.SHIPPING])
+
+    return classes.Data(dom=dom, prod=prod, prc=pricing)
