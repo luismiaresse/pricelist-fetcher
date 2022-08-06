@@ -5,14 +5,27 @@ import os
 
 
 def detect_installed_chrome_version():
+
     chrome_ver_path = None
     # Detect OS
     if os.name == 'nt':          # Windows
+        # TODO Detect from executable
         # Read "Last Version" from $LOCALAPPDATA\Google\Chrome\User Data\Last Version
         chrome_ver_path = os.path.join(os.environ['LOCALAPPDATA'], 'Google', 'Chrome', 'User Data', 'Last Version')
     elif os.name == 'posix':     # Linux
-        # Read "Last Version" from $HOME/.config/google-chrome/Last Version
-        chrome_ver_path = os.path.join(os.environ['HOME'], '.config', 'google-chrome', 'Last Version')
+        # Read version from executable
+        if os.system('which google-chrome-stable') == 0:
+            chrome_full_ver = os.popen('google-chrome-stable --version').read().split(" ")[-2]   # Last is \n
+            chrome_main_ver = chrome_full_ver.split('.')[0]
+            return chrome_main_ver
+        # If it is Chromium
+        elif os.system('which chromium-browser') == 0:
+            chrome_full_ver = os.popen('chromium-browser --version').read().split(" ")[-2]
+            chrome_main_ver = chrome_full_ver.split('.')[0]
+            return chrome_main_ver
+        else:
+            # Read "Last Version" from $HOME/.config/google-chrome/Last Version
+            chrome_ver_path = os.path.join(os.environ['HOME'], '.config', 'google-chrome', 'Last Version')
     else:
         logging.error("OS not recognized or not supported")
         exit(1)

@@ -135,8 +135,8 @@ def fetch_data(url: str = None, opts=None):
         pl.set_logger(logging.DEBUG)
     attrs = fetch_attributes(content)
     cond.postconditions(attrs)
+    # driver.quit()   # causes warnings
     prod = classes.Product(name=attrs[AI.PROD_NAME], brand=attrs[AI.BRAND], category=attrs[AI.CATEGORY])
     dom = classes.Domain(name=DOMAIN.name, tld=TLD.name)
     pricing = classes.Pricing(pricetag=attrs[AI.PRICE], shipping=attrs[AI.SHIPPING])
-    driver.quit()
     return classes.Data(dom=dom, prod=prod, prc=pricing)

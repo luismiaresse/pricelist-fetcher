@@ -8,7 +8,7 @@ It can also be used as a CLI tool.
 
 ### Prerequisites
 
-* Latest [Google Chrome](https://www.google.com/chrome/browser/desktop/)
+* Latest [Google Chrome Stable](https://www.google.com/chrome/browser/desktop/)
 
 To run the Python script, the following packages are also required:
 
