@@ -48,6 +48,8 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Install Google Chrome
         uses: browser-actions/setup-chrome@latest
+        with:
+          chrome-version: stable
       - name: Test with pytest
         run: |
           pytest tests.py
