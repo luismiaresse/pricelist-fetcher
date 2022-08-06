@@ -1,7 +1,7 @@
 # PriceList fetcher (PLF)
 A Python script that fetches information (name, brand, price, ...) about a product, and informs if a lower price was recorded in its price history.
 
-![test-linux](https://github.com/luismiaresse/pricelist-fetcher/actions/workflows/test-linux.yml/badge.svg)
+![Linux Tests](https://github.com/luismiaresse/pricelist-fetcher/actions/workflows/test-linux.yml/badge.svg)
 
 This program's output is intended to be used by PriceList, which does not exist yet, but will in the future.
 It can also be used as a CLI tool.
@@ -20,7 +20,7 @@ To run the Python script, the following packages are also required:
 * [pandas](https://pypi.org/project/pandas/)
 * [psycopg](https://pypi.org/project/psycopg/)
 
-Many can be autoinstalled by executing `pip install -r requirements.txt`:
+Many can be autoinstalled by executing `pip install -r requirements.txt`.
 
 ### Usage
 This tool uses a command-line interface that receives the desired URL as argument and other flags. 
