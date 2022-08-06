@@ -120,7 +120,7 @@ def insert_product(data: classes.Data):
 
 
 def get_lowest_price(data: classes.Data):
-    with psycopg.connect(dbsecrets.DBCreds().URL) as con:
+    with psycopg.connect(creds.DBCreds().URL) as con:
         # Open a cursor to perform database operations
         with con.cursor() as cur:
             # Set timezone
