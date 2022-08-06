@@ -148,4 +148,3 @@ def get_lowest_price(data: classes.Data):
             endstamp = classes.Timestamp(dictio["end_date"][0], dictio["end_time"][0])
             interval = classes.Interval(startstamp, endstamp)
             return pricing, interval
-

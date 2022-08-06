@@ -14,12 +14,12 @@ def detect_installed_chrome_version():
         chrome_ver_path = os.path.join(os.environ['LOCALAPPDATA'], 'Google', 'Chrome', 'User Data', 'Last Version')
     elif os.name == 'posix':     # Linux
         # Read version from executable
-        if os.system('which google-chrome-stable') == 0:
+        if os.system('which google-chrome-stable >/dev/null 2>&1') == 0:
             chrome_full_ver = os.popen('google-chrome-stable --version').read().split(" ")[-2]   # Last is \n
             chrome_main_ver = chrome_full_ver.split('.')[0]
             return chrome_main_ver
         # If it is Chromium
-        elif os.system('which chromium-browser') == 0:
+        elif os.system('which chromium-browser >/dev/null 2>&1') == 0:
             chrome_full_ver = os.popen('chromium-browser --version').read().split(" ")[-2]
             chrome_main_ver = chrome_full_ver.split('.')[0]
             return chrome_main_ver

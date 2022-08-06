@@ -6,7 +6,7 @@ testURLs: dict[DI, str] = {
     DI.AMAZON: "https://www.amazon.es/TD-Systems-Televisores-Chromecast-K32DLC16GLE/dp/B09YVJM363",
     DI.PCCOMPONENTES: "https://www.pccomponentes.com/gigabyte-geforce-rtx-3060-gaming-oc-12gb-gddr6-rev-20",
     DI.ZALANDO: "https://www.zalando.es/nike-sportswear-air-force-1-gtx-unisex-zapatillas-anthraciteblackbarely-grey-ni115o01u-q11.html",
-    DI.WORTEN: "https://www.worten.es/productos/belleza-salud-y-bebe/salud-belleza/bascula/bascula-agd-precision-agd-joyeria-MRKEAN-8436538305003",
+    DI.WORTEN: "https://www.worten.es/productos/electrodomesticos/integrables/microondas-integrable-balay-3cg5172b2-20-l-con-grill-blanco-7573217",
     DI.CARREFOUR: "https://www.carrefour.es/robot-aspirador-y-friegasuelos-irobot-roomba-combo-r113840/VC4A-12554588/p",
     DI.NIKE: "https://www.nike.com/es/t/air-force-1-07-zapatillas-DMJP7P/CW2288-111",
     DI.ADIDAS: "https://www.adidas.es/sudadera-adidas-sportswear-future-icons-3-bandas/HC5255.html",
