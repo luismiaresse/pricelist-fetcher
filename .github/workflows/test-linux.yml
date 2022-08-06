@@ -1,15 +1,19 @@
 name: Linux Tests
 
 on:
-  push:
-    paths-ignore:
-      - '**.md'
-  pull_request:
-    paths-ignore:
-      - '**.md'
   workflow_dispatch:    # Manual trigger
     branches:
       - 'master'
+
+  push:
+    paths-ignore:
+      - '**.md'
+      - '**.yml'
+
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - '**.yml'
 
 jobs:
   build:
