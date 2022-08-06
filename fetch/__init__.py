@@ -6,9 +6,11 @@ from urllib.parse import urlparse
 import logging
 
 import fetch.domains as doms
-import pricelist as pl
 import fetch.conditions as cond
+import fetch.chromedriver as cd
+import pricelist as pl
 import classes
+
 
 AI = doms.AttributeInfo
 DI = doms.DomainInfo
@@ -24,20 +26,6 @@ NOT_SUPPORTED = 'Unknown'
 DOMAINS_PATH = 'config/domains.json'
 DOMAIN: DI | None = None                       # Extracted domain from URL
 TLD: TLDI | None = None                        # Extracted top-level domain from URL
-
-
-def webdriver_init():
-    chrome_options = uc.ChromeOptions()
-    chrome_options.headless = True
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('--log-level=3')
-    chrome_options.add_argument('--disable-extensions')
-    # chrome_options.add_argument('--user-agent= Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:70.0) Gecko/20100101 Firefox/70.0')
-    # chrome_options.add_argument('--disable-dev-shm-usage')
-    driver = uc.Chrome(options=chrome_options)
-    driver.set_page_load_timeout(30)
-    return driver
 
 
 def fetch_attributes(source: BeautifulSoup):
@@ -111,7 +99,7 @@ def remove_key_whitespaces(dictio: dict):
 
 
 def fetch_page(url):
-    driver = webdriver_init()
+    driver = cd.webdriver_init()
     try:
         driver.get(url)
     except TimeoutException as e:
@@ -132,14 +120,14 @@ def fetch_data(url: str = None, opts=None):
     Main function to fetch URLs. domain parameter useful for debugging
     :param url: str
     :param opts:
-    :return: prod: Product
+    :return: data: Data
     """
     if opts is None:
         opts = {pl.Options.V: False, pl.Options.VV: False}
     if not opts[pl.Options.VV]:
         pl.set_logger(logging.INFO)
     detect_domain(url)
-    driver = fetch_page(url)
+    driver: uc.Chrome = fetch_page(url)
     html = driver.page_source
     content = BeautifulSoup(html, features=HTMLPARSER)
     cond.preconditions(url, driver, content)
@@ -150,5 +138,5 @@ def fetch_data(url: str = None, opts=None):
     prod = classes.Product(name=attrs[AI.PROD_NAME], brand=attrs[AI.BRAND], category=attrs[AI.CATEGORY])
     dom = classes.Domain(name=DOMAIN.name, tld=TLD.name)
     pricing = classes.Pricing(pricetag=attrs[AI.PRICE], shipping=attrs[AI.SHIPPING])
-
+    driver.quit()
     return classes.Data(dom=dom, prod=prod, prc=pricing)

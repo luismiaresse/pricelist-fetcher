@@ -74,9 +74,7 @@ class Data:
     def __str__(self):
         return f"""
         Fetched data:
-        {self.prod}
-        {self.dom}
-        {self.prc}
+        {self.prod} {self.dom} {self.prc}
         """
 
 
