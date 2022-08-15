@@ -48,11 +48,11 @@ will also be returned.
 This database can be user defined in `database/dbsecrets.py`, but must contain the same tables.
 
 ## Domains currently supported
-See [DOMAINS](https://www.https://github.com/luismiaresse/pricelist-fetcher/blob/master/DOMAINS.md).
+See [DOMAINS](https://github.com/luismiaresse/pricelist-fetcher/blob/master/DOMAINS.md).
 
 ## Contributing
 
-See [CONTRIBUTING](https://www.https://github.com/luismiaresse/pricelist-fetcher/blob/master/CONTRIBUTING.md) for instructions on how to contribute to the project.
+See [CONTRIBUTING](https://github.com/luismiaresse/pricelist-fetcher/blob/master/CONTRIBUTING.md) for instructions on how to contribute to the project.
 
 ## License
-Licensed under GPLv3. This should be in any fork or redistribution, and should credit me as well. See [LICENSE](https://www.https://github.com/luismiaresse/pricelist-fetcher/blob/master/LICENSE).
+Licensed under GPLv3. This should be in any fork or redistribution, and should credit me as well. See [LICENSE](https://github.com/luismiaresse/pricelist-fetcher/blob/master/LICENSE).
