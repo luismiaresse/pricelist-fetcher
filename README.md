@@ -20,6 +20,7 @@ To run the Python script, the following packages are also required:
 * [pandas](https://pypi.org/project/pandas/)
 * [psycopg](https://pypi.org/project/psycopg/)
 * [psycopg-binary](https://pypi.org/project/psycopg-binary/)
+* [pyshorteners](https://pypi.org/project/pyshorteners/)
 
 Many can be autoinstalled by executing `pip install -r requirements.txt`.
 
@@ -51,7 +52,6 @@ This database can be user defined in `database/dbsecrets.py`, but must contain t
 See [DOMAINS](https://github.com/luismiaresse/pricelist-fetcher/blob/master/DOMAINS.md).
 
 ## Contributing
-
 See [CONTRIBUTING](https://github.com/luismiaresse/pricelist-fetcher/blob/master/CONTRIBUTING.md) for instructions on how to contribute to the project.
 
 ## License
