@@ -15,6 +15,8 @@ class AttributeInfo(Enum):
     # Optional attributes
     BRAND = "brand"
     CATEGORY = "category"
+    COLOR = "color"
+    SIZE = "size"
     SHIPPING = "shipping"
 
     @staticmethod
@@ -44,7 +46,7 @@ class AttributeInfo(Enum):
 
         # is first search and not text search
         if not isinstance(search, ResultSet):
-            matches = search.find_all(dictio[HC.ELEMENT][index], attrs={dictio[HC.ATTRIBUTE][index]: dictio[HC.NAME][index]})
+            matches = AI.find_matches(dictio, index, search)
         else:
             matches = search
 
@@ -59,11 +61,20 @@ class AttributeInfo(Enum):
         return AI.check_matches(dictio, source, matches, index)
 
     @staticmethod
-    def iterate_tags(dictio, tags: ResultSet, index):
+    def find_matches(dictio, index, search):
         HC = HTMLComponent
+        if dictio[HC.ATTRIBUTE][index] == fetch.NULLVAL_STR:
+            matches = search.find_all(dictio[HC.ELEMENT])
+        else:
+            matches = search.find_all(dictio[HC.ELEMENT][index],
+                                      attrs={dictio[HC.ATTRIBUTE][index]: dictio[HC.NAME][index]})
+        return matches
+
+    @staticmethod
+    def iterate_tags(dictio, tags: ResultSet, index):
         matches = []
         for tag in tags:
-            matches = tag.find_all(dictio[HC.ELEMENT][index], attrs={dictio[HC.ATTRIBUTE][index]: dictio[HC.NAME][index]})
+            matches = AttributeInfo.find_matches(dictio, index, tag)
             if len(matches) == 1:
                 break
         return matches
@@ -73,7 +84,7 @@ class AttributeInfo(Enum):
         HC = HTMLComponent
         listsize = len(dictio[HC.ELEMENT])
         # If there is more than 1 match or current tag is from a container
-        if (len(matches) > 1 or (HC.ISCONTAINER in dictio.keys() and dictio[HC.ISCONTAINER][index] is True)) and index + 1 < listsize:
+        if (len(matches) > 1 or (HC.ISCONTAINER in dictio.keys() and dictio[HC.ISCONTAINER][index] is True and len(matches) != 0)) and index + 1 < listsize:
             logging.debug("Trying to find attribute with successive elements")
             return AttributeInfo.find_attribute(dictio, matches, index + 1)
         # If there are no matches but there are more components to find
@@ -103,6 +114,8 @@ class HTMLComponent(Enum):
     ISCONTAINER = "iscontainer"
     # Ignores multiple findings and uses the first one
     GETFIRST = "getfirst"
+    # Marks if component can be skipped if not found
+    ISSKIPPABLE = "isskippable"
 
 
 class TLDInfo(Enum):
@@ -125,17 +138,21 @@ class DomainInfo(Enum):
     """
     Class with methods that return dictionaries with the corresponding HTML components of each attribute in a page.
     """
+    # General stores
     ELCORTEINGLES = "elcorteingles"
-    PCCOMPONENTES = "pccomponentes"
     AMAZON = "amazon"
-    ZALANDO = "zalando"
     WORTEN = "worten"
+    CARREFOUR = "carrefour"
+    ALIEXPRESS = "aliexpress"
+    # Electronics
+    PCCOMPONENTES = "pccomponentes"
+    # Fashion, clothing and footwear
+    ZALANDO = "zalando"
     NIKE = "nike"
     ADIDAS = "adidas"
     CONVERSE = "converse"
     FOOTDISTRICT = "footdistrict"
-    CARREFOUR = "carrefour"
-    ALIEXPRESS = "aliexpress"
+    FOOTLOCKER = "footlocker"
 
     def __init__(self, _):
         self.domain_info_dictio = None
@@ -153,7 +170,15 @@ class DomainInfo(Enum):
         if self.domain_info_dictio is not None:
             return self.domain_info_dictio
         with open(fetch.DOMAINS_PATH, 'r') as f:
-            data: dict = json.load(f)[self.value][fetch.TLD.value]
+            data = None
+            domain: dict = json.load(f)[self.value]
+            tlds = domain.keys()
+            for k in tlds:
+                if fetch.TLD.value in k.split(","):
+                    data: dict = domain[k]
+            if data is None:
+                logging.error("Current TLD for this domain is not supported")
+                exit(1)
             # Replace all str keys with enum keys
             htmlkeys = {i.value: i for i in HTMLComponent}
             attrkeys = {i.value: i for i in AttributeInfo}

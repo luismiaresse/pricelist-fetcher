@@ -2,10 +2,13 @@ import fetch
 
 
 class Product:
-    def __init__(self, name: str, brand: str = None, category: str = None):
+    def __init__(self, pid: str = None, name: str = None, brand: str = None, category: str = None, color: str = None, size: str = None):
+        self.pid = pid
         self.name = name
         self.brand = brand
         self.category = category
+        self.color = color
+        self.size = size
 
     def __str__(self):
         return f"""
@@ -13,19 +16,23 @@ class Product:
         - Name:         {self.name}
         - Brand:        {self.brand}
         - Category:     {self.category}
+        - Color:        {self.color}
+        - Size:         {self.size}
         """
 
 
 class Domain:
-    def __init__(self, name: str, tld: str):
+    def __init__(self, name: str = None, tld: str = None, short_url: str = None):
         self.name = name
         self.tld = tld
+        self.short_url = short_url
 
     def __str__(self):
         return f"""
         Domain:
         - Name:         {self.name}
         - TLD:          {self.tld}
+        - Short URL:    {self.short_url}
         """
 
 
@@ -36,7 +43,7 @@ class Pricing:
         else:
             self.shipping = fetch.NULLVAL_NUM
         if price is not None and currency is not None:
-            self.price = price
+            self.price = float(price)
             self.currency = currency
         if pricetag is not None:
             pos = (0, -1)
@@ -52,7 +59,6 @@ class Pricing:
                 price = localprice
 
             self.price = float(price)
-
 
     def __str__(self):
         return f"""

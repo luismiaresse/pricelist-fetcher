@@ -1,7 +1,6 @@
 import logging
-
-import undetected_chromedriver as uc
 import os
+import undetected_chromedriver as uc
 
 
 def detect_installed_chrome_version():
@@ -47,10 +46,9 @@ def webdriver_init():
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--log-level=3')
     chrome_options.add_argument('--disable-extensions')
+    chrome_options.add_argument('--disable-dev-shm-usage')      # Prevents crash in Docker
     # chrome_options.add_argument('--user-agent= Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:70.0) Gecko/20100101 Firefox/70.0')
-    # chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_main_ver = detect_installed_chrome_version()
     driver = uc.Chrome(options=chrome_options, version_main=chrome_main_ver)
     driver.set_page_load_timeout(20)
     return driver
-

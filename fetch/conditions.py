@@ -25,7 +25,6 @@ def preconditions(url: str, driver: uc.Chrome, source: BeautifulSoup):
     """
     match fetch.DOMAIN:
         # case DI.ELCORTEINGLES:
-        #     pass
         #     # Needed to bypass 5-second timer for bots
         #     attr_dictio = DI.get_domain_info(DI.ELCORTEINGLES)
         #     delay = 5
@@ -70,6 +69,15 @@ def preconditions(url: str, driver: uc.Chrome, source: BeautifulSoup):
                 attr_dictio[AI.PRICE][HC.NAME][0] = 'price'
                 attr_dictio[AI.PRICE][HC.ISCONTAINER][0] = False
                 DI.set_domain_info(DI.NIKE, attr_dictio)
+        case DI.FOOTLOCKER:
+            # Waits for the product to be loaded
+            delay = 3
+            try:
+                driver.implicitly_wait(delay)
+                fetch.update_page_source(driver)
+            except TimeoutException:
+                logging.fatal("Timeout: Could not load product info")
+                exit(1)
 
 
 def postconditions(attrs: dict):
@@ -85,13 +93,24 @@ def postconditions(attrs: dict):
         case DI.AMAZON:
             # Removes spaces before and after classes name
             attrs[AI.PROD_NAME] = fetch.split_and_join_str(attrs[AI.PROD_NAME])
-            # Removes "Visit the Store of " and "Brand: "
             text = str(attrs[AI.BRAND])
-            if "Marca" in text:
-                attrs[AI.BRAND] = text.removeprefix("Marca: ")
-            else:
-                attrs[AI.BRAND] = text.removeprefix("Visita la Store de ")
-
+            # Removes "Visit the Store of " or "Brand: "
+            match fetch.TLD:
+                case fetch.TLDI.ES:
+                    if "Marca" in text:
+                        attrs[AI.BRAND] = text.removeprefix("Marca: ")
+                    else:
+                        attrs[AI.BRAND] = text.removeprefix("Visita la Store de ")
+                case fetch.TLDI.FR:
+                    if "Marque" in text:
+                        attrs[AI.BRAND] = text.removeprefix("Marque : ")
+                    else:
+                        attrs[AI.BRAND] = text.removeprefix("Visiter la boutique ")
+                case fetch.TLDI.COM:
+                    if "Brand" in text:
+                        attrs[AI.BRAND] = text.removeprefix("Brand: ")
+                    else:
+                        attrs[AI.BRAND] = text.removeprefix("Visit the Store of ")
         case DI.ZALANDO:
             # Removes 'desde '
             if attrs[AI.PRICE] is not None and "desde" in attrs[AI.PRICE]:

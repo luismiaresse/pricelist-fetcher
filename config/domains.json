@@ -36,12 +36,11 @@
             "name": ["bylineInfo"]
         },
         "price": {
-            "element": ["span", "span"],
-            "attribute": ["class", "class"],
-            "name": ["(.*apexPriceToPay.*|.*priceToPay.*)","a-offscreen"],
-            "iscontainer": [true, false],
-            "getfirst": [false, true],
-            "desc": ["Price container", "Price (new)"]
+            "element": ["span", "span", "span"],
+            "attribute": ["class", "id","class"],
+            "name": ["(.*apexPriceToPay.*|.*priceToPay.*|.*reinventPriceAccordionT2.*)", "price", "a-offscreen"],
+            "iscontainer": [true, false, false],
+            "desc": ["Price container", "Price (books)", "Price (any)"]
         }
     }
   },
@@ -91,7 +90,7 @@
   },
 
   "worten": {
-    "es": {
+    "es,pt": {
         "prod_name" : {
             "element": ["h1"],
             "attribute": ["class"],
@@ -219,6 +218,25 @@
             "name": ["product-info-price", "price"],
             "iscontainer": [true, false, false],
             "desc": ["Price container", "Price"]
+        }
+    }
+  },
+
+  "footlocker": {
+    "es": {
+        "prod_name" : {
+            "element": ["span"],
+            "attribute": ["itemprop"],
+            "name": ["name"],
+            "getfirst": [true]
+        },
+        "price": {
+            "element": ["form", "span", "span", "span"],
+            "attribute": ["id", "class", "class", null],
+            "name": ["ProductDetails","ProductPrice", "ProductPrice-final", null],
+            "iscontainer": [true, true, false, false],
+            "isskippable": [false, true, true, false],
+            "desc": ["Price container", "Price with tax message", "Discounted price", "Regular price"]
         }
     }
   }
