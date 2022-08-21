@@ -109,6 +109,13 @@
             "attribute": ["class", "class"],
             "name": ["w-product__price__current iss-product-current-price", "product-offers__price-title"],
             "desc": ["Price container", "Price (new)"]
+        },
+        "shipping": {
+            "element": ["span"],
+            "attribute": ["class"],
+            "name": ["w-product__actions__shipping-cost"],
+            "iscontainer": [true],
+            "desc": ["Shipping container"]
         }
     }
   },

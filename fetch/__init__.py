@@ -1,3 +1,4 @@
+import subprocess
 
 from selenium.common.exceptions import WebDriverException, TimeoutException
 import undetected_chromedriver as uc
@@ -10,7 +11,7 @@ import fetch.domains as doms
 import fetch.conditions as cond
 import fetch.chromedriver as cd
 import pricelist as pl
-import classes
+from classes import Product, Domain, Pricing, Data, Timestamp, Interval
 
 
 AI = doms.AttributeInfo
@@ -23,31 +24,30 @@ HTMLPARSER = "html.parser"
 # Null values for string and numeric types
 NULLVAL_STR = None
 NULLVAL_NUM = -1.00
-NOT_SUPPORTED = 'Unknown'
+NOT_SUPPORTED = "Unknown"
 DOMAINS_PATH = 'config/domains.json'
 DOMAIN: DI | None = None                       # Extracted domain from URL
 TLD: TLDI | None = None                        # Extracted top-level domain from URL
-PAGE_SOURCE = None                             # Current page source
 
 
 def update_page_source(driver: uc.Chrome):
-    global PAGE_SOURCE
-    PAGE_SOURCE = BeautifulSoup(driver.page_source, features=HTMLPARSER)
+    source = BeautifulSoup(driver.page_source, features=HTMLPARSER)
+    return source
 
 
 def fetch_attributes(source: BeautifulSoup):
     """
     Gets all existing attributes
 
-    :param source:
-    :return:
+    :param source: BeautifulSoup
+    :return: dictio: dict
     """
     dictio = DI.get_domain_info(DOMAIN)
     attributes = [e for e in AI]
     for attr in attributes:
-        if attr in dictio.keys():
+        if attr in dictio:
             dictio[attr] = AI.find_attribute(dictio[attr], source=source)
-            if dictio[attr] is None or dictio[attr] == "None":
+            if dictio[attr] is None or dictio[attr] == "None" or dictio[attr] == "":
                 dictio[attr] = NOT_SUPPORTED
         else:
             dictio[attr] = NOT_SUPPORTED
@@ -79,9 +79,7 @@ def detect_domain(url: str):
     global TLD
     domain = urlparse(url).netloc
     detect_tld(domain)
-    logging.info("Checking domain " + domain + "...")
-    domains = [e for e in DI]
-    for d in domains:
+    for d in [dom for dom in DI]:
         if domain in str(d.value) or str(d.value) in domain:
             DOMAIN = d
             return d
@@ -103,13 +101,18 @@ def split_and_join_str(text: str, split_char: str = None, join_char: str | None 
 
 
 def remove_key_whitespaces(dictio: dict):
-    for key in dictio.keys():
-        dictio[key] = str(dictio[key]).strip()
+    for key in dictio:
+        if dictio[key] is not NOT_SUPPORTED:
+            dictio[key] = str(dictio[key]).strip()
 
 
-def fetch_page(url):
-    driver = cd.webdriver_init()
+def fetch_page(url, driver=None):
+    if driver is None:
+        driver = cd.webdriver_init()
+
     try:
+        driver.execute_script("window.open('');")          # Open new tab
+        driver.switch_to.window(driver.window_handles[1])  # Switch to new tab
         driver.get(url)
     except TimeoutException as e:
         logging.error(e.msg + " Retrying one more time")
@@ -129,34 +132,86 @@ def clean_content(content: BeautifulSoup):
         s.decompose()
 
 
-def fetch_data(url: str = None, opts=None):
+def validate_data(attrs, surl):
+    must_attrs = (attrs[AI.PROD_NAME], attrs[AI.PRICETAG])
+    must_vars = (DOMAIN.name, TLD.name, surl)
+    if (NOT_SUPPORTED or None or "" or "None") in must_attrs + must_vars:
+        logging.fatal("Could not fetch some mandatory attributes")
+        logging.debug("Attributes state:")
+        for attr in must_attrs + must_vars:
+            logging.debug(f"{attr}")
+        exit(1)
+
+
+def expand_url(url):
+    if "https://da.gd" in url:
+        pos = url.rfind("/")
+        url = url[pos + 1:]
+        cmd = f"curl https://da.gd/coshorten/{url}"
+        url = subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL).decode('ascii').strip()
+    return url
+
+
+def shorten_url(url):
+    if "https://da.gd" not in url:
+        # TODO: URL must be cleaned before shortening to prevent equal products with diff URLs
+        shortener = pyshorteners.Shortener().dagd
+        url = shortener.short(url)
+    return url
+
+
+def get_page_soup(url, driver=None):
+    url = expand_url(url)
+    logging.info(f"Checking {urlparse(url).netloc}...")
+    detect_domain(url)
+    driver: uc.Chrome = fetch_page(url, driver)
+    html = driver.page_source
+    source = BeautifulSoup(html, features=HTMLPARSER)
+    source = cond.preconditions(url, driver, source)
+    driver.close()
+    driver.quit()
+    clean_content(source)
+    return source
+
+
+def get_data_from_soup(url: str, source: BeautifulSoup):
     """
-    Main function to fetch URLs. domain parameter useful for debugging
+    Gets data from BeautifulSoup object.
+
+    :param url: str
+    :param source: BeautifulSoup
+    :return: data: Data
+    """
+    detect_domain(url)
+    attrs = fetch_attributes(source)
+    cond.postconditions(attrs)
+    url = shorten_url(url)
+    validate_data(attrs, url)
+    prod = Product(name=attrs[AI.PROD_NAME], brand=attrs[AI.BRAND], category=attrs[AI.CATEGORY],
+                           color=attrs[AI.COLOR], size=attrs[AI.SIZE])
+    dom = Domain(name=DOMAIN.name, tld=TLD.name, short_url=url)
+    prc = Pricing(pricetag=attrs[AI.PRICETAG], shipping=attrs[AI.SHIPPING])
+    data = Data(dom=dom, prod=prod, prc=prc)
+    return data
+
+
+def fetch_data(url: str = None, opts=None, driver=None):
+    """
+    Main function to fetch URLs.
+
     :param url: str
     :param opts:
+    :param driver:
     :return: data: Data
     """
     if opts is None:
         opts = {pl.Options.V: False, pl.Options.VV: False}
     if not opts[pl.Options.VV]:
         pl.set_logger(logging.INFO)
-    detect_domain(url)
-    driver: uc.Chrome = fetch_page(url)
-    html = driver.page_source
-    global PAGE_SOURCE
-    PAGE_SOURCE = BeautifulSoup(html, features=HTMLPARSER)
-    cond.preconditions(url, driver, PAGE_SOURCE)
-    clean_content(PAGE_SOURCE)
+    source = get_page_soup(url, driver)
+
     if opts[pl.Options.V]:
         pl.set_logger(logging.DEBUG)
-    attrs = fetch_attributes(PAGE_SOURCE)
-    cond.postconditions(attrs)
-    driver.quit()
-    # TODO: URL must be cleaned before shortening to prevent equal products with diff URLs
-    shortener = pyshorteners.Shortener().dagd
-    short_url = shortener.short(url)
-    prod = classes.Product(name=attrs[AI.PROD_NAME], brand=attrs[AI.BRAND], category=attrs[AI.CATEGORY],
-                           color=attrs[AI.COLOR], size=attrs[AI.SIZE])
-    dom = classes.Domain(name=DOMAIN.name, tld=TLD.name, short_url=short_url)
-    prc = classes.Pricing(pricetag=attrs[AI.PRICE], shipping=attrs[AI.SHIPPING])
-    return classes.Data(dom=dom, prod=prod, prc=prc)
+
+    data = get_data_from_soup(url, source)
+    return data

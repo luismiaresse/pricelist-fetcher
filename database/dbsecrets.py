@@ -1,7 +1,15 @@
+import os
+
+ENV_URL = "PLF_DB_URL"
+
 
 class DBCreds:
     """
     DATABASE LOGIN CREDENTIALS
+    Preference:
+    1. The above environment variable
+    2. The variable named URL below
+    3. The rest of variables below
     """
     # Complete URL to the database: easiest way to connect
     URL = None
@@ -15,10 +23,11 @@ class DBCreds:
     SCHEMA = "public"                                   # Schema name (default: public)
 
     def __init__(self):
-        if self.URL is None and self.MANAGER is not None and self.DATABASE is not None and self.HOST is not None:
+        if os.environ.get(ENV_URL) is not None:
+            self.URL = os.environ.get(ENV_URL)
+        elif self.URL is None and self.MANAGER is not None and self.DATABASE is not None and self.HOST is not None:
             self.URL = f"{self.MANAGER}://{self.HOST}:{str(self.PORT)}/{self.DATABASE}"
             if self.USER is not None:
                 self.URL += f"?user={self.USER}"
                 if self.PASSWD is not None:
                     self.URL += f"&password={self.PASSWD}"
-

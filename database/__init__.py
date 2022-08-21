@@ -1,45 +1,64 @@
-import os.path as path
+from datetime import datetime
 import logging
+import time
 import warnings
-import database.dbsecrets as creds
 
+import pytz
+
+import database.dbsecrets as creds
 import psycopg          # PostgreSQL driver
-import classes
+from classes import Data, Interval, Timestamp, Pricing
 import pandas as pd
 
-TIMEZONE = 'utc'
+
+DB_TIMEZONE = 'utc'
+LOCAL_TIMEZONE = None                         # To convert UTC to local time
 DBSECRETS_PATH = "database/dbsecrets.py"     # To check if exists
 
 
 # TODO Check if product already exists by URL in database and now() - last_update < interval
 #  to avoid fetching the same page too many times
-def preprocess(data: classes.Data):
-    pass
+def preprocess():
+    global LOCAL_TIMEZONE
+    LOCAL_TIMEZONE = time.tzname[0]
 
 
-def postprocess(data: classes.Data):
-    if path.exists(DBSECRETS_PATH):
-        dbcreds = creds.DBCreds()
-        if dbcreds.URL is not None:
-            data.prod.pid = get_prod_pid(data)
-            insert_product(data)
-            (lowprc, interval) = get_lowest_price(data)
+def postprocess(data: Data):
+    dbcreds = creds.DBCreds()
+    if dbcreds.URL is not None:
+        # Escape quotes in strings
+        data.prod.name = data.prod.name.replace("'", "''")
+        data.prod.brand = data.prod.brand.replace("'", "''")
+        # Get PID from DB
+        data.prod.pid = get_prod_pid(data)
+        # Insert price history into DB
+        insert_product(data)
+        (lowprc, interval) = get_lowest_price(data)
+        # Show times according to local timezone
+        localfmt = "%Y-%m-%d at %H:%M:%S"
+        localtz = pytz.timezone(LOCAL_TIMEZONE)
+        start = datetime.fromisoformat(interval.start.isoformat()).replace(tzinfo=pytz.utc).astimezone(localtz).strftime(localfmt)
+        end = datetime.fromisoformat(interval.end.isoformat()).replace(tzinfo=pytz.utc).astimezone(localtz).strftime(localfmt)
+
+        if data.prc.price == lowprc.price:
+            print(f"This is the lowest recorded price for this item. It was first seen {f'since {start}' if start != end else 'now'}.")
+        elif start != end:
             print(f"The lowest recorded price for this item was {lowprc.currency} {lowprc.price}"
-                  f" from {interval.start.date} at {interval.start.time} to {interval.end.date} at {interval.end.time}.")
-        else:
-            logging.info("""No database credentials found. Skipping lowest recorded price...
-            If you want to use this feature, please add your database to database/dbsecrets.py,
-            or use release binary.""")
+                  f" from {start} to {end}.")
+    else:
+        logging.info("""No database credentials found. Skipping lowest recorded price...
+        If you want to use this feature, please add your database to database/dbsecrets.py,
+        or use release binary.""")
 
 
-def get_prod_pid(data: classes.Data):
+def get_prod_pid(data: Data):
     with psycopg.connect(creds.DBCreds().URL) as con:
         # Open a cursor to perform database operations
         with con.cursor() as cur:
             con.autocommit = False
 
             # Set timezone
-            cur.execute(f"SET TIME ZONE '{TIMEZONE}'")
+            cur.execute(f"SET TIME ZONE '{DB_TIMEZONE}'")
 
             # Get PID of product
             query = f"""
@@ -71,18 +90,14 @@ def get_prod_pid(data: classes.Data):
 # TODO Prevent too many requests by updating date/time by an interval
 #  If price is unchanged and now() - last_update < interval, do not update date/time
 #  Otherwise, update date/time. Also store first update (to make graphs)
-def insert_product(data: classes.Data):
+def insert_product(data: Data):
     with psycopg.connect(creds.DBCreds().URL, options=f"-c search_path={creds.DBCreds().SCHEMA}") as con:
         # Open a cursor to perform database operations
         with con.cursor() as cur:
             con.autocommit = False
 
             # Set timezone
-            cur.execute(f"SET TIME ZONE '{TIMEZONE}'")
-
-            # Escape quotes in strings
-            data.prod.name = data.prod.name.replace("'", "''")
-            data.prod.brand = data.prod.brand.replace("'", "''")
+            cur.execute(f"SET TIME ZONE '{DB_TIMEZONE}'")
 
             # Get latest price
             query = f"""
@@ -97,7 +112,7 @@ def insert_product(data: classes.Data):
 
             # If latest price is unchanged update end date/time and return
             if not dictio.empty and dictio["price"][0] == data.prc.price:
-                timestamp = classes.Timestamp(dictio["end_date"][0], dictio["end_time"][0])
+                timestamp = Timestamp(dictio["end_date"][0], dictio["end_time"][0])
                 try:
                     cur.execute(f"""
                         UPDATE "histories" SET "end_date" = CURRENT_DATE, "end_time" = CURRENT_TIME
@@ -126,12 +141,12 @@ def insert_product(data: classes.Data):
             logging.debug("Succesfully updated DB with latest price")
 
 
-def get_lowest_price(data: classes.Data):
+def get_lowest_price(data: Data):
     with psycopg.connect(creds.DBCreds().URL) as con:
         # Open a cursor to perform database operations
         with con.cursor() as cur:
             # Set timezone
-            cur.execute(f"SET TIME ZONE '{TIMEZONE}'")
+            cur.execute(f"SET TIME ZONE '{DB_TIMEZONE}'")
 
             # Get lowest price of product
             query = f"""
@@ -149,8 +164,8 @@ def get_lowest_price(data: classes.Data):
                 logging.debug("No price history for this product")
                 return
 
-            pricing = classes.Pricing(price=dictio["price"][0], currency=dictio["currency"][0])
-            startstamp = classes.Timestamp(dictio["start_date"][0], dictio["start_time"][0])
-            endstamp = classes.Timestamp(dictio["end_date"][0], dictio["end_time"][0])
-            interval = classes.Interval(startstamp, endstamp)
+            pricing = Pricing(price=dictio["price"][0], currency=dictio["currency"][0])
+            startstamp = Timestamp(dictio["start_date"][0], dictio["start_time"][0])
+            endstamp = Timestamp(dictio["end_date"][0], dictio["end_time"][0])
+            interval = Interval(startstamp, endstamp)
             return pricing, interval

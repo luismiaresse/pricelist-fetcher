@@ -17,6 +17,7 @@ def setup_parser():
 
 def set_logger(log_level):
     logger = logging.getLogger()
+    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%H:%M:%S')
     logger.setLevel(log_level)
 
 
@@ -29,16 +30,22 @@ class Options:
     NO_DB = "no_db"
 
 
-if __name__ == '__main__':
+def main():
     args = setup_parser()
     opts = args.__dict__
+    if not opts[Options.NO_DB]:
+        db.preprocess()
     if opts[Options.V] or opts[Options.VV]:
         set_logger(logging.DEBUG)
     else:
         set_logger(logging.INFO)
-    data = fetch.fetch_data(args.url, opts)
+    data = fetch.fetch_data(url=args.url, opts=opts)
     print(data)
     if not opts[Options.NO_DB]:
         db.postprocess(data)
-    set_logger(logging.ERROR)       # Hides warnings after quitting chromedriver
+    set_logger(logging.ERROR)  # Hides warnings after quitting chromedriver
     exit(0)
+
+
+if __name__ == '__main__':
+    main()

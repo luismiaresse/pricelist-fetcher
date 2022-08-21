@@ -11,7 +11,7 @@ class AttributeInfo(Enum):
     Enum that contains all supported extracted attributes.
     """
     PROD_NAME = "prod_name"
-    PRICE = "price"
+    PRICETAG = "price"
     # Optional attributes
     BRAND = "brand"
     CATEGORY = "category"
@@ -54,7 +54,7 @@ class AttributeInfo(Enum):
         if (isinstance(search, ResultSet) or (len(matches) > 1 and HC.ISCONTAINER in dictio.keys() and dictio[HC.ISCONTAINER][index] is False)) and index != 0:
             matches = AI.iterate_tags(dictio, matches, index)
 
-        if HC.GETFIRST in dictio.keys() and dictio[HC.GETFIRST][index] is True:
+        if HC.GETFIRST in dictio and dictio[HC.GETFIRST][index] is True:
             while len(matches) > 1:
                 matches.pop(-1)
         logging.debug("Match: " + str(matches))
@@ -84,7 +84,7 @@ class AttributeInfo(Enum):
         HC = HTMLComponent
         listsize = len(dictio[HC.ELEMENT])
         # If there is more than 1 match or current tag is from a container
-        if (len(matches) > 1 or (HC.ISCONTAINER in dictio.keys() and dictio[HC.ISCONTAINER][index] is True and len(matches) != 0)) and index + 1 < listsize:
+        if (len(matches) > 1 or (HC.ISCONTAINER in dictio and dictio[HC.ISCONTAINER][index] is True and len(matches) != 0)) and index + 1 < listsize:
             logging.debug("Trying to find attribute with successive elements")
             return AttributeInfo.find_attribute(dictio, matches, index + 1)
         # If there are no matches but there are more components to find

@@ -1,86 +1,95 @@
+from dataclasses import dataclass
+
 import fetch
 
 
+@dataclass
 class Product:
-    def __init__(self, pid: str = None, name: str = None, brand: str = None, category: str = None, color: str = None, size: str = None):
-        self.pid = pid
-        self.name = name
-        self.brand = brand
-        self.category = category
-        self.color = color
-        self.size = size
+    name: str
+    pid: int = None
+    brand: str = None
+    category: str = None
+    color: str = None
+    size: str = None
 
     def __str__(self):
         return f"""
-        Product:
+    Product:
         - Name:         {self.name}
-        - Brand:        {self.brand}
-        - Category:     {self.category}
-        - Color:        {self.color}
-        - Size:         {self.size}
-        """
+        {f'- Brand:        {self.brand}' if self.brand is not (None or fetch.NOT_SUPPORTED) else ''}
+        {f'- Category:     {self.category}' if self.category is not (None or fetch.NOT_SUPPORTED) else ''}
+        {f'- Color:        {self.color}' if self.color is not (None or fetch.NOT_SUPPORTED) else ''}
+        {f'- Size:         {self.size}' if self.size is not (None or fetch.NOT_SUPPORTED) else ''}
+        """.rstrip()
 
 
+@dataclass
 class Domain:
-    def __init__(self, name: str = None, tld: str = None, short_url: str = None):
-        self.name = name
-        self.tld = tld
-        self.short_url = short_url
+    name: str
+    tld: str
+    short_url: str
 
     def __str__(self):
         return f"""
-        Domain:
+    Domain:
         - Name:         {self.name}
         - TLD:          {self.tld}
         - Short URL:    {self.short_url}
-        """
+        """.rstrip()
 
 
+@dataclass(init=False)
 class Pricing:
     def __init__(self, price: str | float = None, currency: str = None, pricetag: str = None, shipping: str = None):
-        if shipping is not None:
+        if shipping is not (None and fetch.NOT_SUPPORTED):
             self.shipping = float(shipping)
         else:
             self.shipping = fetch.NULLVAL_NUM
-        if price is not None and currency is not None:
+        if pricetag is not None:
+            (self.price, self.currency) = self.fromtag(pricetag)
+        elif price is not None and currency is not None:
             self.price = float(price)
             self.currency = currency
-        if pricetag is not None:
-            pos = (0, -1)
-            pos = [i for i in pos if not pricetag[i].isnumeric()]
-            self.currency = pricetag[pos[0]]
-            localprice = pricetag.replace(self.currency, "").strip()
 
-            if localprice.find(",") < localprice.find("."):  # 1,234.56
-                price = localprice.replace(",", "")
-            elif localprice.find(",") > localprice.find("."):  # 1.234,56
-                price = localprice.replace(".", "").replace(",", ".")
-            else:
-                price = localprice
+    @staticmethod
+    def fromtag(pricetag):
+        pos = (0, -1)
+        pos = [i for i in pos if not pricetag[i].isnumeric()]
+        currency = pricetag[pos[0]]
+        localprice = pricetag.replace(currency, "").strip()
+        price = Pricing.convert_float(localprice)
+        return price, currency
 
-            self.price = float(price)
+    @staticmethod
+    def convert_float(localprice):
+        if localprice.find(",") < localprice.find("."):  # 1,234.56
+            price = localprice.replace(",", "")
+        elif localprice.find(",") > localprice.find("."):  # 1.234,56
+            price = localprice.replace(".", "").replace(",", ".")
+        else:
+            price = localprice
+        return float(price)
 
     def __str__(self):
         return f"""
-        Pricing:
+    Pricing:
         - Price:        {self.currency} {(self.price-self.shipping if self.shipping is float else self.price)}
-        - Shipping:     {(f"{self.currency} {self.shipping}" if self.shipping != fetch.NULLVAL_NUM else fetch.NOT_SUPPORTED)}
-        """
+        {f"- Shipping:     {self.currency} {self.shipping}" if self.shipping != fetch.NULLVAL_NUM else ''}
+        """.rstrip()
 
 
+@dataclass
 class Data:
     """
     Groups other data objects into a single object
     """
-    def __init__(self, prod: Product, dom: Domain, prc: Pricing):
-        self.prod = prod
-        self.dom = dom
-        self.prc = prc
+    prod: Product = None
+    dom: Domain = None
+    prc: Pricing = None
 
     def __str__(self):
         return f"""
-        Fetched data:
-        {self.prod} {self.dom} {self.prc}
+Fetched data: {self.prod} {self.dom} {self.prc}
         """
 
 
@@ -96,8 +105,20 @@ class Timestamp:
         else:
             self.time = time
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.date == other.date and self.time == other.time
+        else:
+            return False
+
+    def isoformat(self):
+        return f"{self.date} {self.time}"
+
 
 class Interval:
     def __init__(self, start: Timestamp, end: Timestamp):
         self.start = start
         self.end = end
+
+    def equal(self):
+        return self.start == self.end

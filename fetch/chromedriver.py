@@ -51,4 +51,5 @@ def webdriver_init():
     chrome_main_ver = detect_installed_chrome_version()
     driver = uc.Chrome(options=chrome_options, version_main=chrome_main_ver)
     driver.set_page_load_timeout(20)
+    driver.maximize_window()
     return driver
