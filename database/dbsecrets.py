@@ -23,7 +23,8 @@ class DBCreds:
     SCHEMA = "public"                                   # Schema name (default: public)
 
     def __init__(self):
-        if os.environ.get(ENV_URL) is not None:
+        url = os.environ.get(ENV_URL)
+        if url is not (None or ''):
             self.URL = os.environ.get(ENV_URL)
         elif self.URL is None and self.MANAGER is not None and self.DATABASE is not None and self.HOST is not None:
             self.URL = f"{self.MANAGER}://{self.HOST}:{str(self.PORT)}/{self.DATABASE}"
