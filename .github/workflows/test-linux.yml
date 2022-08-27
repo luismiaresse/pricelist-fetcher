@@ -52,4 +52,4 @@ jobs:
           chrome-version: stable
       - name: Test with pytest
         run: |
-          pytest tests.py
+          pytest

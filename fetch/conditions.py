@@ -8,7 +8,7 @@ import undetected_chromedriver as uc
 import logging
 import re
 
-import classes
+from classes import Domain, Pricing
 import fetch
 
 AI = fetch.domains.AttributeInfo
@@ -16,16 +16,17 @@ HC = fetch.domains.HTMLComponent
 DI = fetch.domains.DomainInfo
 
 
-def preconditions(url: str, driver: uc.Chrome, source: BeautifulSoup):
+def preconditions(url: str, dom: Domain, driver: uc.Chrome, source: BeautifulSoup):
     """
     Executes extra steps for specific websites after getting their page.
 
     :param url: str
+    :param dom: Domain
     :param driver: chromedriver
     :param source: BeautifulSoup
     :return: updated source: BeautifulSoup
     """
-    match fetch.DOMAIN:
+    match dom.name:
         # case DI.ELCORTEINGLES:
         #     # Needed to bypass 5-second timer for bots
         #     attr_dictio = DI.get_domain_info(DI.ELCORTEINGLES)
@@ -40,7 +41,7 @@ def preconditions(url: str, driver: uc.Chrome, source: BeautifulSoup):
         #         exit(1)
         case DI.WORTEN:
             # Switch price container to marketplace if Worten does not exist
-            attr_dictio = DI.get_domain_info(DI.WORTEN)
+            attr_dictio = DI.get_domain_info(DI.WORTEN, dom.tld)
             if not source.find(attr_dictio[AI.PRICETAG][HC.ELEMENT],
                                attrs={attr_dictio[AI.PRICETAG][HC.ATTRIBUTE][0]: attr_dictio[AI.PRICETAG][HC.NAME][0]}):
                 # Price container (marketplace)
@@ -48,14 +49,18 @@ def preconditions(url: str, driver: uc.Chrome, source: BeautifulSoup):
                 attr_dictio[AI.PRICETAG][HC.ATTRIBUTE][0] = 'class'
                 attr_dictio[AI.PRICETAG][HC.NAME][0] = 'accordion-item'
                 attr_dictio[AI.PRICETAG][HC.ISCONTAINER] = [True, False]
-                DI.set_domain_info(DI.WORTEN, attr_dictio)
+            # Get the category from URL
+            # https://worten.es/productos/<category>/...
+            slash_url = url.split('/')
+            attr_dictio[AI.CATEGORY] = slash_url[4].upper()
+            DI.set_domain_info(DI.WORTEN, attr_dictio)
         case DI.NIKE:
             if source.find("h1", attrs={"class": re.compile('.*not-found.*')}):
                 logging.error("Product is not available or does not exist")
                 exit(1)
             # Detect if page is SNKRS
             if "launch" in url:
-                attr_dictio = DI.get_domain_info(DI.NIKE)
+                attr_dictio = DI.get_domain_info(DI.NIKE, dom.tld)
                 # Product name
                 attr_dictio[AI.PROD_NAME][HC.ELEMENT][0] = 'h5'
                 attr_dictio[AI.PROD_NAME][HC.ATTRIBUTE][0] = 'data-qa'
@@ -83,13 +88,17 @@ def preconditions(url: str, driver: uc.Chrome, source: BeautifulSoup):
     return source
 
 
-def postconditions(attrs: dict):
+def postconditions(attrs: dict, dom: Domain):
     """
     Processes data for specific domains.
 
     :param attrs: dict
+    :param dom: Domain
     """
-    match fetch.DOMAIN:
+    # Change str to float
+    if attrs[AI.SHIPPING] == fetch.NOT_SUPPORTED:
+        attrs[AI.SHIPPING] = fetch.NULLVAL_NUM
+    match dom.name:
         case DI.PCCOMPONENTES:
             # Remove P/N code and trailing newline from brand
             attrs[AI.BRAND] = fetch.split_and_join_str(attrs[AI.BRAND], '-', None, 0).rsplit("\n")[0]
@@ -98,7 +107,7 @@ def postconditions(attrs: dict):
             attrs[AI.PROD_NAME] = fetch.split_and_join_str(attrs[AI.PROD_NAME])
             text = str(attrs[AI.BRAND])
             # Removes "Visit the Store of " or "Brand: "
-            match fetch.TLD:
+            match dom.tld:
                 case fetch.TLDI.ES:
                     if "Marca" in text:
                         attrs[AI.BRAND] = text.removeprefix("Marca: ")
@@ -115,9 +124,9 @@ def postconditions(attrs: dict):
                     else:
                         attrs[AI.BRAND] = text.removeprefix("Visit the Store of ")
         case DI.WORTEN:
-            if attrs[AI.SHIPPING] is not None:
-                pos = str(attrs[AI.SHIPPING]).find(classes.Pricing.fromtag(attrs[AI.PRICETAG])[1])
-                attrs[AI.SHIPPING] = classes.Pricing.fromtag(attrs[AI.SHIPPING][pos:])[0]
+            if attrs[AI.SHIPPING] is not fetch.NULLVAL_NUM:
+                pos = str(attrs[AI.SHIPPING]).find(Pricing.fromtag(attrs[AI.PRICETAG])[1])
+                attrs[AI.SHIPPING] = Pricing.fromtag(attrs[AI.SHIPPING][pos:])[0]
         case DI.ZALANDO:
             # Removes 'desde '
             if attrs[AI.PRICETAG] is not None and "desde" in attrs[AI.PRICETAG]:
@@ -127,7 +136,7 @@ def postconditions(attrs: dict):
         case DI.NIKE | DI.ADIDAS | DI.CONVERSE:
             # Brand is always -Name-
             if attrs[AI.BRAND] == fetch.NOT_SUPPORTED:
-                attrs[AI.BRAND] = fetch.DOMAIN.name
+                attrs[AI.BRAND] = dom.name.name
         case DI.ALIEXPRESS:
             # Gets the lower price
             if attrs[AI.PRICETAG] is not None:
@@ -135,9 +144,3 @@ def postconditions(attrs: dict):
     # Common fixes
     # Remove whitespaces
     fetch.remove_key_whitespaces(attrs)
-    # Change str to float
-    if attrs[AI.SHIPPING] == fetch.NOT_SUPPORTED:
-        attrs[AI.SHIPPING] = fetch.NULLVAL_NUM
-
-
-

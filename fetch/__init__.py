@@ -6,12 +6,11 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import logging
 import pyshorteners
-
 import fetch.domains as doms
 import fetch.conditions as cond
 import fetch.chromedriver as cd
 import pricelist as pl
-from classes import Product, Domain, Pricing, Data, Timestamp, Interval
+from classes import Product, Domain, Pricing, Data
 
 
 AI = doms.AttributeInfo
@@ -26,8 +25,6 @@ NULLVAL_STR = None
 NULLVAL_NUM = -1.00
 NOT_SUPPORTED = "Unknown"
 DOMAINS_PATH = 'config/domains.json'
-DOMAIN: DI | None = None                       # Extracted domain from URL
-TLD: TLDI | None = None                        # Extracted top-level domain from URL
 
 
 def update_page_source(driver: uc.Chrome):
@@ -35,20 +32,24 @@ def update_page_source(driver: uc.Chrome):
     return source
 
 
-def fetch_attributes(source: BeautifulSoup):
+def fetch_attributes(source: BeautifulSoup, dom: Domain):
     """
     Gets all existing attributes
 
     :param source: BeautifulSoup
+    :param dom: Domain
     :return: dictio: dict
     """
-    dictio = DI.get_domain_info(DOMAIN)
+    dictio = DI.get_domain_info(dom.name, dom.tld)
     attributes = [e for e in AI]
     for attr in attributes:
         if attr in dictio:
-            dictio[attr] = AI.find_attribute(dictio[attr], source=source)
-            if dictio[attr] is None or dictio[attr] == "None" or dictio[attr] == "":
-                dictio[attr] = NOT_SUPPORTED
+            if isinstance(dictio[attr], str):
+                pass
+            else:
+                dictio[attr] = AI.find_attribute(dictio[attr], source=source)
+                if dictio[attr] is None or dictio[attr] == "None" or dictio[attr] == "":
+                    dictio[attr] = NOT_SUPPORTED
         else:
             dictio[attr] = NOT_SUPPORTED
     return dictio
@@ -61,28 +62,23 @@ def detect_tld(domain: str):
     :param domain: str
     :return: tld: TLDInfo
     """
-    global TLD
     tlds = [e for e in TLDI]
     for tld in tlds:
         if str(tld.value) in domain.split('.'):
-            TLD = TLDI(tld)
+            return TLDI(tld)
 
 
 def detect_domain(url: str):
     """
-    Checks domain of URL in the supported domains enum and returns it.
+    Checks domain of URL in the supported domains enum.
 
     :param url: str
-    :return: domain: DomainInfo
     """
-    global DOMAIN
-    global TLD
     domain = urlparse(url).netloc
-    detect_tld(domain)
+    tld = detect_tld(domain)
     for d in [dom for dom in DI]:
         if domain in str(d.value) or str(d.value) in domain:
-            DOMAIN = d
-            return d
+            return Domain(name=d, tld=tld)
     else:
         logging.error("Domain not recognized")
         exit(1)
@@ -98,6 +94,13 @@ def split_and_join_str(text: str, split_char: str = None, join_char: str | None 
     elif word_index is not None:
         return string[word_index]
     return string
+
+
+def find_char_positions(string: str, char):
+    index = string.find(char)
+    while index != -1:
+        yield index
+        index = string.find(char, index + 1)
 
 
 def remove_key_whitespaces(dictio: dict):
@@ -132,24 +135,15 @@ def clean_content(content: BeautifulSoup):
         s.decompose()
 
 
-def validate_data(attrs, surl):
+def validate_data(attrs, dom: Domain, surl):
     must_attrs = (attrs[AI.PROD_NAME], attrs[AI.PRICETAG])
-    must_vars = (DOMAIN.name, TLD.name, surl)
+    must_vars = (dom.name.name, dom.tld.name, surl)
     if (NOT_SUPPORTED or None or "" or "None") in must_attrs + must_vars:
         logging.fatal("Could not fetch some mandatory attributes")
         logging.debug("Attributes state:")
         for attr in must_attrs + must_vars:
             logging.debug(f"{attr}")
         exit(1)
-
-
-def expand_url(url):
-    if "https://da.gd" in url:
-        pos = url.rfind("/")
-        url = url[pos + 1:]
-        cmd = f"curl https://da.gd/coshorten/{url}"
-        url = subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL).decode('ascii').strip()
-    return url
 
 
 def shorten_url(url):
@@ -161,13 +155,12 @@ def shorten_url(url):
 
 
 def get_page_soup(url, driver=None):
-    url = expand_url(url)
     logging.info(f"Checking {urlparse(url).netloc}...")
-    detect_domain(url)
+    domain = detect_domain(url)
     driver: uc.Chrome = fetch_page(url, driver)
     html = driver.page_source
     source = BeautifulSoup(html, features=HTMLPARSER)
-    source = cond.preconditions(url, driver, source)
+    source = cond.preconditions(url, domain, driver, source)
     driver.close()
     driver.quit()
     clean_content(source)
@@ -182,26 +175,26 @@ def get_data_from_soup(url: str, source: BeautifulSoup):
     :param source: BeautifulSoup
     :return: data: Data
     """
-    detect_domain(url)
-    attrs = fetch_attributes(source)
-    cond.postconditions(attrs)
+    domain = detect_domain(url)   # Needed twice (for tests)
+    attrs = fetch_attributes(source, domain)
+    cond.postconditions(attrs, domain)
     url = shorten_url(url)
-    validate_data(attrs, url)
+    validate_data(attrs, domain, url)
     prod = Product(name=attrs[AI.PROD_NAME], brand=attrs[AI.BRAND], category=attrs[AI.CATEGORY],
-                           color=attrs[AI.COLOR], size=attrs[AI.SIZE])
-    dom = Domain(name=DOMAIN.name, tld=TLD.name, short_url=url)
+                   color=attrs[AI.COLOR], size=attrs[AI.SIZE])
+    dom = Domain(name=domain.name, tld=domain.tld, short_url=url)
     prc = Pricing(pricetag=attrs[AI.PRICETAG], shipping=attrs[AI.SHIPPING])
     data = Data(dom=dom, prod=prod, prc=prc)
     return data
 
 
-def fetch_data(url: str = None, opts=None, driver=None):
+def fetch_data(url: str, opts: dict = None, driver: uc.Chrome = None):
     """
-    Main function to fetch URLs.
+    Main function to fetch data from URL.
 
     :param url: str
-    :param opts:
-    :param driver:
+    :param opts: dict
+    :param driver: Chromedriver
     :return: data: Data
     """
     if opts is None:

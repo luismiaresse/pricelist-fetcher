@@ -1,7 +1,9 @@
 import argparse
 import logging
 import fetch
-import database as db
+import requests
+from database import BaseOps
+import database.process as dbp
 
 
 def setup_parser():
@@ -11,7 +13,7 @@ def setup_parser():
     # parser.add_argument("-d", "--domain", help="specify a domain to debug by using its test URL", type=str)
     parser.add_argument("url", help="full URL of the site you want to get info from. Example: https://www.foo.bar",
                         type=str)
-    parser.add_argument("--no-db", help="skip database use to store and fetch prices", action="store_true")
+    parser.add_argument("--no-db", help="skip database use to store current price and fetch lowest price", action="store_true")
     return parser.parse_args()
 
 
@@ -19,6 +21,18 @@ def set_logger(log_level):
     logger = logging.getLogger()
     logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%H:%M:%S')
     logger.setLevel(log_level)
+
+
+def expand_url(url):
+    """
+    Useful to get full URLs from shortened ones.
+    """
+    if "https://da.gd" in url:
+        pos = url.rfind("/")
+        url = url[pos + 1:]
+        page = f"https://da.gd/coshorten/{url}"
+        url = requests.get(page).content.decode("utf-8").strip()
+    return url
 
 
 class Options:
@@ -33,16 +47,22 @@ class Options:
 def main():
     args = setup_parser()
     opts = args.__dict__
-    if not opts[Options.NO_DB]:
-        db.preprocess()
     if opts[Options.V] or opts[Options.VV]:
         set_logger(logging.DEBUG)
     else:
         set_logger(logging.INFO)
-    data = fetch.fetch_data(url=args.url, opts=opts)
-    print(data)
+
     if not opts[Options.NO_DB]:
-        db.postprocess(data)
+        with BaseOps() as db:
+            dbp.preprocess(db)
+            url = expand_url(args.url)
+            data = fetch.fetch_data(url=url, opts=opts)
+            print(data)
+            dbp.postprocess(db, data)
+    else:
+        url = expand_url(args.url)
+        data = fetch.fetch_data(url=url, opts=opts)
+        print(data)
     set_logger(logging.ERROR)  # Hides warnings after quitting chromedriver
     exit(0)
 

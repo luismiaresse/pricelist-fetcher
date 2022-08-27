@@ -33,37 +33,31 @@ class TestClass:
             drivers[index].quit()
 
         # Test getting attributes from soup in parallel
-        def check_data_from_soup(url, soup, results, index):
-            results[index] = fetch.get_data_from_soup(url, soup)
+        def check_data_from_soup(url, soup, res, index):
+            res[index] = fetch.get_data_from_soup(url, soup)
 
         # Ensure all domains are being tested
         for d in [e for e in DI]:
             if d not in testURLs:
-                logging.warning(f"{d.name} ({d.value}) not being tested, but exists in DomainInfo. Add a test URL to test it")
+                print(f"\n{d.name} ({d.value}) not being tested, but exists in DomainInfo. Add a test URL to test it.")
 
         urls_list = list(testURLs.values())
         drivers = [None] * len(urls_list)
         sources = [None] * len(urls_list)
         results = [None] * len(urls_list)
 
-        # TODO Failed randomly, maybe race condition/threading issue?
         # Test URLs
         with ThreadPoolExecutor(max_workers=mp.cpu_count()) as executor:
             for url in urls_list:
                 executor.submit(check_page_sources, url, drivers, sources, urls_list.index(url))
 
-        for src in sources:
-            data = fetch.get_data_from_soup(url=urls_list[sources.index(src)], source=src)
-            print(data)
-
-        # TODO In parallel does not work (only some)
         # Test attributes from soup
-        # with ThreadPoolExecutor(max_workers=mp.cpu_count()) as executor:
-        #     for src in sources:
-        #         executor.submit(check_data_from_soup, urls_list[sources.index(src)], src, results, sources.index(src))
+        with ThreadPoolExecutor(max_workers=mp.cpu_count()) as executor:
+            for src in sources:
+                executor.submit(check_data_from_soup, urls_list[sources.index(src)], src, results, sources.index(src))
 
-        # if None in results:
-        #     print(results)
-        #     raise AssertionError("Some results are None")
-        # for data in results:
-        #     print(data)
+        if None in results:
+            raise AssertionError("Some results are None")
+
+        for data in results:
+            print(data)

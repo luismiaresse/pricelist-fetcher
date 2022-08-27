@@ -57,7 +57,7 @@ class AttributeInfo(Enum):
         if HC.GETFIRST in dictio and dictio[HC.GETFIRST][index] is True:
             while len(matches) > 1:
                 matches.pop(-1)
-        logging.debug("Match: " + str(matches))
+        # logging.debug("Match: " + str(matches))
         return AI.check_matches(dictio, source, matches, index)
 
     @staticmethod
@@ -163,7 +163,7 @@ class DomainInfo(Enum):
         """
         self.domain_info_dictio = attr_dictio
 
-    def get_domain_info(self):
+    def get_domain_info(self, tld: TLDInfo):
         """
         Returns the domain dictionary
         """
@@ -174,7 +174,7 @@ class DomainInfo(Enum):
             domain: dict = json.load(f)[self.value]
             tlds = domain.keys()
             for k in tlds:
-                if fetch.TLD.value in k.split(","):
+                if tld.value in k.split(","):
                     data: dict = domain[k]
             if data is None:
                 logging.error("Current TLD for this domain is not supported")

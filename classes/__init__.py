@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-
 import fetch
 
 
@@ -25,15 +24,15 @@ class Product:
 
 @dataclass
 class Domain:
-    name: str
-    tld: str
-    short_url: str
+    name: fetch.domains.DomainInfo
+    tld: fetch.domains.TLDInfo
+    short_url: str = None
 
     def __str__(self):
         return f"""
     Domain:
-        - Name:         {self.name}
-        - TLD:          {self.tld}
+        - Name:         {self.name.name}
+        - TLD:          {self.tld.name}
         - Short URL:    {self.short_url}
         """.rstrip()
 
