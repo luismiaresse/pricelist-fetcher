@@ -24,9 +24,12 @@ jobs:
 
   container:
     runs-on: ubuntu-latest
-    container: docker://luismiaresse/pricelist-fetcher:latest
+    container:
+      image: luismiaresse/pricelist-fetcher:latest
+      options: --user luismi
     steps:
       - name: Install python dependencies and test
-      - run: |
+        run: |
+          cd /home/luismi/pricelist-fetcher
           pip3 install -r requirements.txt pytest
           python3 -m pytest
