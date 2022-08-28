@@ -10,10 +10,10 @@ def setup_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", help="show debug messages", action="store_true")
     parser.add_argument("-vv", "--very-verbose", help="show A LOT more debug messages", action="store_true")
-    # parser.add_argument("-d", "--domain", help="specify a domain to debug by using its test URL", type=str)
-    parser.add_argument("url", help="full URL of the site you want to get info from. Example: https://www.foo.bar",
+    parser.add_argument("url", help="URL of the site you want to get info from. Example: https://www.foo.bar",
                         type=str)
     parser.add_argument("--no-db", help="skip database use to store current price and fetch lowest price", action="store_true")
+    # parser.add_argument("-d", "--domain", help="specify a domain to debug by using its test URL", type=str)
     return parser.parse_args()
 
 
@@ -23,11 +23,13 @@ def set_logger(log_level):
     logger.setLevel(log_level)
 
 
-def expand_url(url):
+def process_url(url):
     """
-    Useful to get full URLs from shortened ones.
+    Useful to get full URLs from shortened ones and add https if missing.
     """
-    if "https://da.gd" in url:
+    if "https://" not in url:
+        url = f"https://{url}"
+    if "da.gd" in url:
         pos = url.rfind("/")
         url = url[pos + 1:]
         page = f"https://da.gd/coshorten/{url}"
@@ -55,12 +57,12 @@ def main():
     if not opts[Options.NO_DB]:
         with BaseOps() as db:
             dbp.preprocess(db)
-            url = expand_url(args.url)
+            url = process_url(args.url)
             data = fetch.fetch_data(url=url, opts=opts)
             print(data)
             dbp.postprocess(db, data)
     else:
-        url = expand_url(args.url)
+        url = process_url(args.url)
         data = fetch.fetch_data(url=url, opts=opts)
         print(data)
     set_logger(logging.ERROR)  # Hides warnings after quitting chromedriver

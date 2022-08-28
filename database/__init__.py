@@ -4,7 +4,7 @@ import warnings
 import pandas as pd
 import psycopg  # PostgreSQL driver
 import database.dbsecrets as creds
-from classes import Data, Interval, Timestamp, Pricing
+from classes import Data, Interval, Timestamp, Pricing, Product
 
 
 class BaseOps:
@@ -50,16 +50,15 @@ class BaseOps:
             AND "color" = '{data.prod.color}' AND "size" = '{data.prod.size}'
             """
 
-        warnings.simplefilter("ignore")
-        dictio = pd.read_sql_query(query, self.con)      # TODO Use SQLAlchemy 2.0 to avoid warning (not possible at the moment)
+        dictio = pd.read_sql_query(query, self.con)
 
         # If no PID is found
         if dictio.empty:
-            logging.debug("Product not found in database")
+            logging.debug("Product not found in database. Inserting as new product")
             insert = f"""
-                INSERT INTO "products" ("prod_name", "dom_name", "dom_tld", "short_url", "brand", "category", "color")
+                INSERT INTO "products" ("prod_name", "dom_name", "dom_tld", "short_url", "brand", "category", "color", "size")
                 VALUES ('{data.prod.name}', '{data.dom.name.name}', '{data.dom.tld.name}', '{data.dom.short_url}', '{data.prod.brand}',
-                 '{data.prod.category}', '{data.prod.color}')
+                 '{data.prod.category}', '{data.prod.color}', '{data.prod.size}')
                 RETURNING "pid"
                 """
             self.cur.execute(insert)
@@ -68,7 +67,7 @@ class BaseOps:
             return pid
         return dictio["pid"][0]
 
-    def insert_product(self, data: Data):
+    def insert_history(self, data: Data):
         # Get latest price
         query = f"""
             SELECT "price", "end_date", "end_time" 
@@ -77,8 +76,7 @@ class BaseOps:
             ORDER BY "end_date" DESC, "end_time" DESC
             """
 
-        warnings.simplefilter("ignore")
-        dictio = pd.read_sql_query(query, self.con)      # TODO Use SQLAlchemy 2.0 to avoid warning (not possible at the moment)
+        dictio = pd.read_sql_query(query, self.con)
 
         # If latest price is unchanged update end date/time and return
         if not dictio.empty and dictio["price"][0] == data.prc.price:
@@ -99,7 +97,7 @@ class BaseOps:
             # Any subsequent checks with same price will update end date/time only
             try:
                 self.cur.execute(f"""
-                    INSERT INTO histories ("pid", "price", "start_date", "start_time", "end_date", "end_time", "currency", "shipping")
+                    INSERT INTO "histories" ("pid", "price", "start_date", "start_time", "end_date", "end_time", "currency", "shipping")
                      VALUES ('{data.prod.pid}', '{data.prc.price}', CURRENT_DATE, CURRENT_TIME, CURRENT_DATE, CURRENT_TIME,
                       '{data.prc.currency}', '{data.prc.shipping}')
                     """)
@@ -119,8 +117,7 @@ class BaseOps:
             ORDER BY "price"
             """
 
-        warnings.simplefilter("ignore")
-        dictio = pd.read_sql_query(query, self.con)      # TODO Use SQLAlchemy 2.0 to avoid warning (not possible at the moment)
+        dictio = pd.read_sql_query(query, self.con)
 
         # If no price history
         if dictio.empty:
@@ -132,6 +129,22 @@ class BaseOps:
         endstamp = Timestamp(dictio["end_date"][0], dictio["end_time"][0])
         interval = Interval(startstamp, endstamp)
         return pricing, interval
+
+    def get_product_by_pid(self, pid: int):
+        # Get product by PID
+        query = f"""
+            SELECT "pid", "prod_name", "dom_name", "dom_tld", "short_url", "brand", "category", "color", "size"
+            FROM "products"
+            WHERE "pid" = '{pid}'
+            """
+
+        dictio = pd.read_sql_query(query, self.con)
+
+        # If no product is found
+        if dictio.empty:
+            return None
+        return Product(pid=dictio["pid"][0], name=dictio["prod_name"][0], brand=dictio["brand"][0],
+                       category=dictio["category"][0], color=dictio["color"][0], size=dictio["size"][0])
 
     # TODO Update newly supported and some existing data
     def update_product(self, data: Data):

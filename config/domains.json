@@ -17,6 +17,11 @@
             "name": ["product_detail-buy-price-container", "price _big", "price _big _sale"],
             "iscontainer": [true, false, false],
             "desc": ["Price container", "Regular price", "Discounted price"]
+        },
+        "color": {
+            "element": ["span"],
+            "attribute": ["id"],
+            "name": ["colorNameSpan"]
         }
     }
   },

@@ -12,14 +12,14 @@ class Product:
     size: str = None
 
     def __str__(self):
-        return f"""
-    Product:
+        string = f"""Product:
         - Name:         {self.name}
         {f'- Brand:        {self.brand}' if self.brand is not (None or fetch.NOT_SUPPORTED) else ''}
         {f'- Category:     {self.category}' if self.category is not (None or fetch.NOT_SUPPORTED) else ''}
         {f'- Color:        {self.color}' if self.color is not (None or fetch.NOT_SUPPORTED) else ''}
         {f'- Size:         {self.size}' if self.size is not (None or fetch.NOT_SUPPORTED) else ''}
-        """.rstrip()
+        """
+        return _remove_newlines(string)
 
 
 @dataclass
@@ -29,12 +29,12 @@ class Domain:
     short_url: str = None
 
     def __str__(self):
-        return f"""
-    Domain:
+        string = f"""Domain:
         - Name:         {self.name.name}
         - TLD:          {self.tld.name}
         - Short URL:    {self.short_url}
-        """.rstrip()
+        """
+        return _remove_newlines(string)
 
 
 @dataclass(init=False)
@@ -61,20 +61,36 @@ class Pricing:
 
     @staticmethod
     def convert_float(localprice):
-        if localprice.find(",") < localprice.find("."):  # 1,234.56
-            price = localprice.replace(",", "")
-        elif localprice.find(",") > localprice.find("."):  # 1.234,56
-            price = localprice.replace(".", "").replace(",", ".")
+        """
+        Converts numbers from localised format to standard float, i.e. 1.234,56 to 1234.56
+        """
+        if localprice.find(",") != -1 and localprice.find(".") != -1:   # 1.234,56 or 1,234.56
+            if localprice.find(",") > localprice.find("."):             # 1.234,56
+                price = localprice.replace(".", "").replace(",", ".")
+            else:                                                       # 1,234.56
+                price = localprice.replace(",", "")
+        elif localprice.find(".") != -1:                                # 1234.56 or 1.234
+            # TODO This could cause trouble for currencies than may have more than 2 decimal digits
+            if len(localprice) - localprice.find(".") > 2 and len(localprice) > 4:  # 1.234
+                price = localprice.replace(".", "")
+            else:                                                       # 1234.56
+                price = localprice
+        elif localprice.find(",") != -1:                                # 1,234 or 1234,56
+            # TODO This could cause trouble for currencies than may have more than 2 decimal digits
+            if len(localprice) - localprice.find(",") > 2 and len(localprice) > 4:              # 1,234
+                price = localprice.replace(",", "")
+            else:                                                       # 1234,56
+                price = localprice.replace(",", ".")
         else:
             price = localprice
         return float(price)
 
     def __str__(self):
-        return f"""
-    Pricing:
+        string = f"""Pricing:
         - Price:        {self.currency} {(self.price-self.shipping if self.shipping is float else self.price)}
         {f"- Shipping:     {self.currency} {self.shipping}" if self.shipping != fetch.NULLVAL_NUM else ''}
-        """.rstrip()
+        """
+        return _remove_newlines(string)
 
 
 @dataclass
@@ -88,7 +104,10 @@ class Data:
 
     def __str__(self):
         return f"""
-Fetched data: {self.prod} {self.dom} {self.prc}
+Fetched data:
+    {self.prod}
+    {self.dom}
+    {self.prc}
         """
 
 
@@ -121,3 +140,8 @@ class Interval:
 
     def equal(self):
         return self.start == self.end
+
+
+def _remove_newlines(string: str):
+    return "\n".join([s for s in string.splitlines() if s.strip()])
+

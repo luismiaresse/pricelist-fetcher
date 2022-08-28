@@ -1,4 +1,3 @@
-import subprocess
 
 from selenium.common.exceptions import WebDriverException, TimeoutException
 import undetected_chromedriver as uc

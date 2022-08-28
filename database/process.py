@@ -1,6 +1,5 @@
-
+import warnings
 from datetime import datetime
-import logging
 import time
 import pytz
 from database import BaseOps
@@ -12,6 +11,7 @@ from classes import Data
 def preprocess(db: BaseOps):
     if db.url is not None:
         db.LOCAL_TIMEZONE = time.tzname[0]
+    warnings.simplefilter("ignore")   # TODO Use SQLAlchemy 2.0 in pandas to avoid warning (not possible at the moment)
 
 
 def postprocess(db: BaseOps, data: Data):
