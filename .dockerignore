@@ -1,0 +1,7 @@
+*.sh
+*.spec
+.*
+venv*
+build
+database/dumps
+dist

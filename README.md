@@ -1,5 +1,5 @@
 # PriceList fetcher (PLF)
-A Python script that fetches information (name, brand, price, ...) about a product, and informs if a lower price was recorded in its price history.
+A Python script that fetches information (name, brand, price...) about a product, and informs if a lower price was recorded in its price history.
 
 ![Linux Tests](https://github.com/luismiaresse/pricelist-fetcher/actions/workflows/test-linux.yml/badge.svg)
 
@@ -10,7 +10,7 @@ It can also be used as a CLI tool.
 
 * Latest [Google Chrome Stable](https://www.google.com/chrome/browser/desktop/)
 
-To run the Python script, the following packages are also required:
+To run the Python script directly, the following packages are also required:
 
 * [python 3.10+](https://www.python.org/downloads/)
 * [pip](https://pypi.org/project/pip/)
@@ -22,7 +22,7 @@ To run the Python script, the following packages are also required:
 * [psycopg-binary](https://pypi.org/project/psycopg-binary/)
 * [pyshorteners](https://pypi.org/project/pyshorteners/)
 
-Many can be autoinstalled by executing `pip install -r requirements.txt`.
+Many can be autoinstalled by executing `pip install -r requirements.txt` in the project directory.
 
 ## Usage
 This tool uses a command-line interface that receives the desired URL as argument and other flags. 
@@ -55,4 +55,4 @@ See [DOMAINS](https://github.com/luismiaresse/pricelist-fetcher/blob/master/DOMA
 See [CONTRIBUTING](https://github.com/luismiaresse/pricelist-fetcher/blob/master/CONTRIBUTING.md) for instructions on how to contribute to the project.
 
 ## License
-Licensed under GPLv3. This should be in any fork or redistribution, and should credit me as well. See [LICENSE](https://github.com/luismiaresse/pricelist-fetcher/blob/master/LICENSE).
+Licensed under GPLv3. This should be in any fork or redistribution, and should credit contributors as well. See [LICENSE](https://github.com/luismiaresse/pricelist-fetcher/blob/master/LICENSE).

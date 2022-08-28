@@ -1,0 +1,32 @@
+name: Linux Tests (Docker)
+
+on:
+  workflow_dispatch:    # Manual trigger
+    branches:
+      - 'master'
+
+#  push:
+#    paths-ignore:
+#      - '**.md'
+#      - '**.yml'
+#
+#  pull_request:
+#    paths-ignore:
+#      - '**.md'
+#      - '**.yml'
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Running Docker image"
+
+  container:
+    runs-on: ubuntu-latest
+    container: docker://luismiaresse/pricelist-fetcher:latest
+    steps:
+      - name: Install python dependencies and test
+      - run: |
+          pip3 install -r requirements.txt pytest
+          python3 -m pytest
