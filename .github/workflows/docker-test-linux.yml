@@ -16,13 +16,7 @@ on:
 #      - '**.yml'
 
 jobs:
-  docker:
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo "Running Docker image"
-
-  container:
+  vm:
     runs-on: ubuntu-latest
     container:
       image: luismiaresse/pricelist-fetcher:latest
