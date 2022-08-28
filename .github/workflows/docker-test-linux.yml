@@ -23,10 +23,10 @@ jobs:
       options: --user root
     steps:
       - name: Install python dependencies
-        working-directory: /home/luismi/pricelist-fetcher
+        working-directory: /pricelist-fetcher
         run: |
           pip3 install -r requirements.txt pytest
       - name: Test with pytest
-        working-directory: /home/luismi/pricelist-fetcher
+        working-directory: /pricelist-fetcher
         run: |
           pytest
