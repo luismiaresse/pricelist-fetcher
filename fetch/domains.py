@@ -57,7 +57,7 @@ class AttributeInfo(Enum):
         if HC.GETFIRST in dictio and dictio[HC.GETFIRST][index] is True:
             while len(matches) > 1:
                 matches.pop(-1)
-        # logging.debug("Match: " + str(matches))
+        logging.debug("Match: " + str(matches))
         return AI.check_matches(dictio, source, matches, index)
 
     @staticmethod
