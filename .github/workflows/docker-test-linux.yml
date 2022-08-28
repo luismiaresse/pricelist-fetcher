@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: luismiaresse/pricelist-fetcher:latest
-      options: --user luismi
+      options: --user root
     steps:
       - name: Install python dependencies and test
         run: |
