@@ -71,13 +71,13 @@ class Pricing:
                 price = localprice.replace(",", "")
         elif localprice.find(".") != -1:                                # 1234.56 or 1.234
             # TODO This could cause trouble for currencies than may have more than 2 decimal digits
-            if len(localprice) - localprice.find(".") > 2 and len(localprice) > 4:  # 1.234
+            if (len(localprice) - 1) - localprice.find(".") > 2:        # 1.234
                 price = localprice.replace(".", "")
             else:                                                       # 1234.56
                 price = localprice
         elif localprice.find(",") != -1:                                # 1,234 or 1234,56
             # TODO This could cause trouble for currencies than may have more than 2 decimal digits
-            if len(localprice) - localprice.find(",") > 2 and len(localprice) > 4:              # 1,234
+            if (len(localprice) - 1) - localprice.find(",") > 2:        # 1,234
                 price = localprice.replace(",", "")
             else:                                                       # 1234,56
                 price = localprice.replace(",", ".")

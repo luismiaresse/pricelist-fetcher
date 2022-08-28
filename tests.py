@@ -27,37 +27,59 @@ class TestClass:
         pricelist.set_logger(logging.DEBUG)
 
         # Test fetching each page source in parallel
-        def check_page_sources(url, drivers, sources, index):
-            drivers[index] = fetch.chromedriver.webdriver_init()
-            sources[index] = fetch.get_page_soup(url, driver=drivers[index])
-            drivers[index].quit()
+        def check_page_sources(drivers, sources, dom):
+            drivers[dom] = fetch.chromedriver.webdriver_init()
+            sources[dom] = fetch.get_page_soup(testURLs[dom], driver=drivers[dom])
 
         # Test getting attributes from soup in parallel
-        def check_data_from_soup(url, soup, res, index):
-            res[index] = fetch.get_data_from_soup(url, soup)
+        def check_data_from_soup(sources, results, dom):
+            results[dom] = fetch.get_data_from_soup(testURLs[dom], sources[dom])
+
+        # Fallback if source is None
+        def source_fallback(sources):
+            for dom, src in sources.items():
+                if src is None:
+                    sources[dom] = fetch.get_page_soup(testURLs[dom])
+            if None in sources:
+                raise AssertionError("Some page sources are None")
+            return sources
+
+        # Fallback if result is None
+        def result_fallback(results, sources):
+            for dom, res in results.items():
+                if res is None:
+                    results[dom] = fetch.get_data_from_soup(testURLs[dom], sources[dom])
+            if None in results:
+                raise AssertionError("Some results are None")
+            return results
+
 
         # Ensure all domains are being tested
         for d in [e for e in DI]:
             if d not in testURLs:
                 print(f"\n{d.name} ({d.value}) not being tested, but exists in DomainInfo. Add a test URL to test it.")
 
-        urls_list = list(testURLs.values())
-        drivers = [None] * len(urls_list)
-        sources = [None] * len(urls_list)
-        results = [None] * len(urls_list)
+        drivers = {e: None for e in testURLs}
+        sources = {e: None for e in testURLs}
+        results = {e: None for e in testURLs}
 
         # Test URLs
         with ThreadPoolExecutor(max_workers=mp.cpu_count()) as executor:
-            for url in urls_list:
-                executor.submit(check_page_sources, url, drivers, sources, urls_list.index(url))
+            for dom in testURLs:
+                executor.submit(check_page_sources, drivers, sources, dom)
+
+        if None in sources.values():
+            logging.error("Some sources are None. Trying single thread fallback.")
+            sources = source_fallback(sources)
 
         # Test attributes from soup
         with ThreadPoolExecutor(max_workers=mp.cpu_count()) as executor:
-            for src in sources:
-                executor.submit(check_data_from_soup, urls_list[sources.index(src)], src, results, sources.index(src))
+            for dom in sources:
+                executor.submit(check_data_from_soup, sources, results, dom)
 
-        if None in results:
-            raise AssertionError("Some results are None")
+        if None in results.values():
+            logging.error("Some results are None. Trying single thread fallback...")
+            results = result_fallback(results, sources)
 
-        for data in results:
+        for data in results.values():
             print(data)
