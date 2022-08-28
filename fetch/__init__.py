@@ -187,23 +187,14 @@ def get_data_from_soup(url: str, source: BeautifulSoup):
     return data
 
 
-def fetch_data(url: str, opts: dict = None, driver: uc.Chrome = None):
+def fetch_data(url: str, driver: uc.Chrome = None):
     """
     Main function to fetch data from URL.
 
     :param url: str
-    :param opts: dict
     :param driver: Chromedriver
     :return: data: Data
     """
-    if opts is None:
-        opts = {pl.Options.V: False, pl.Options.VV: False}
-    if not opts[pl.Options.VV]:
-        pl.set_logger(logging.INFO)
     source = get_page_soup(url, driver)
-
-    if opts[pl.Options.V]:
-        pl.set_logger(logging.DEBUG)
-
     data = get_data_from_soup(url, source)
     return data

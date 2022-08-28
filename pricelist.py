@@ -17,10 +17,19 @@ def setup_parser():
     return parser.parse_args()
 
 
-def set_logger(log_level):
+def set_logger(log_level, opts=None):
     logger = logging.getLogger()
     logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%H:%M:%S')
     logger.setLevel(log_level)
+    if opts is None or not opts[Options.VV]:
+        selenium_logger = logging.getLogger("selenium.webdriver.remote.remote_connection")
+        selenium_logger.setLevel(logging.WARNING)
+        requests_log = logging.getLogger("requests.packages.urllib3")
+        requests_log.setLevel(logging.ERROR)
+        requests_log.propagate = False
+        urllib3_log = logging.getLogger("urllib3")
+        urllib3_log.setLevel(logging.ERROR)
+        urllib3_log.propagate = False
 
 
 def process_url(url):
@@ -50,7 +59,7 @@ def main():
     args = setup_parser()
     opts = args.__dict__
     if opts[Options.V] or opts[Options.VV]:
-        set_logger(logging.DEBUG)
+        set_logger(logging.DEBUG, opts)
     else:
         set_logger(logging.INFO)
 
@@ -58,14 +67,13 @@ def main():
         with BaseOps() as db:
             dbp.preprocess(db)
             url = process_url(args.url)
-            data = fetch.fetch_data(url=url, opts=opts)
+            data = fetch.fetch_data(url=url)
             print(data)
             dbp.postprocess(db, data)
     else:
         url = process_url(args.url)
-        data = fetch.fetch_data(url=url, opts=opts)
+        data = fetch.fetch_data(url=url)
         print(data)
-    set_logger(logging.ERROR)  # Hides warnings after quitting chromedriver
     exit(0)
 
 

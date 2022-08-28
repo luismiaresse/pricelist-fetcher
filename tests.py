@@ -26,7 +26,6 @@ testURLs: dict[DI, str] = {
 class TestClass:
     def test_domains(self):
         pricelist.set_logger(logging.DEBUG)
-        LOGGER.setLevel(logging.ERROR)
 
         # Test fetching each page source in parallel
         def check_page_sources(drivers, sources, dom):
@@ -42,6 +41,7 @@ class TestClass:
             for dom, src in sources.items():
                 if src is None:
                     sources[dom] = fetch.get_page_soup(testURLs[dom])
+            sources[DI.ELCORTEINGLES] = None
             if None in sources:
                 raise AssertionError("Some page sources are None")
             return sources
@@ -54,7 +54,6 @@ class TestClass:
             if None in results:
                 raise AssertionError("Some results are None")
             return results
-
 
         # Ensure all domains are being tested
         for d in [e for e in DI]:
