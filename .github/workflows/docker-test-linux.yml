@@ -22,8 +22,11 @@ jobs:
       image: luismiaresse/pricelist-fetcher:latest
       options: --user root
     steps:
-      - name: Install python dependencies and test
+      - name: Install python dependencies
+        working-directory: /home/luismi/pricelist-fetcher
         run: |
-          cd /home/luismi/pricelist-fetcher
           pip3 install -r requirements.txt pytest
-          python3 -m pytest
+      - name: Test with pytest
+        working-directory: /home/luismi/pricelist-fetcher
+        run: |
+          pytest

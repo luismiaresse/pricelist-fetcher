@@ -3,6 +3,7 @@ import logging
 import fetch
 import pricelist
 import multiprocessing as mp
+from selenium.webdriver.remote.remote_connection import LOGGER
 
 DI = fetch.DI
 
@@ -25,6 +26,7 @@ testURLs: dict[DI, str] = {
 class TestClass:
     def test_domains(self):
         pricelist.set_logger(logging.DEBUG)
+        LOGGER.setLevel(logging.ERROR)
 
         # Test fetching each page source in parallel
         def check_page_sources(drivers, sources, dom):
