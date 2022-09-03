@@ -3,7 +3,6 @@ import logging
 import fetch
 import pricelist
 import multiprocessing as mp
-from selenium.webdriver.remote.remote_connection import LOGGER
 
 DI = fetch.DI
 

@@ -8,7 +8,6 @@ import pyshorteners
 import fetch.domains as doms
 import fetch.conditions as cond
 import fetch.chromedriver as cd
-import pricelist as pl
 from classes import Product, Domain, Pricing, Data
 
 
@@ -23,7 +22,7 @@ HTMLPARSER = "html.parser"
 NULLVAL_STR = None
 NULLVAL_NUM = -1.00
 NOT_SUPPORTED = "Unknown"
-DOMAINS_PATH = 'config/domains.json'
+DOMAINS_PATH = 'config/domains.json5'
 
 
 def update_page_source(driver: uc.Chrome):
@@ -80,7 +79,7 @@ def detect_domain(url: str):
             return Domain(name=d, tld=tld)
     else:
         logging.error("Domain not recognized")
-        exit(1)
+        raise ValueError(f"Domain {domain} not recognized")
 
 
 def split_and_join_str(text: str, split_char: str = None, join_char: str | None = ' ', word_index: int = None):
@@ -122,7 +121,7 @@ def fetch_page(url, driver=None):
             driver.get(url)
         except TimeoutException as e:
             logging.fatal(e.msg + " Retry failed.")
-            exit(1)
+            raise e
     except WebDriverException as e:
         logging.fatal(e.msg)
         exit(1)
@@ -142,7 +141,7 @@ def validate_data(attrs, dom: Domain, surl):
         logging.debug("Attributes state:")
         for attr in must_attrs + must_vars:
             logging.debug(f"{attr}")
-        exit(1)
+        raise ValueError(f"Could not fetch some mandatory attributes for domain {dom.name.name}")
 
 
 def shorten_url(url):

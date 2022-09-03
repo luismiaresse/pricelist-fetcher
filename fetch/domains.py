@@ -1,4 +1,4 @@
-import json
+import json5
 import logging
 import re
 import fetch
@@ -39,7 +39,7 @@ class AttributeInfo(Enum):
         # Aliases for convenience
         HC = HTMLComponent
         AI = AttributeInfo
-        if HC.TEXT in dictio.keys() and dictio[HC.TEXT][index] != fetch.NULLVAL_STR:
+        if HC.TEXT in dictio and dictio[HC.TEXT][index] != fetch.NULLVAL_STR:
             search = AI.find_text(source, dictio[HC.TEXT])  # is Tag
         else:
             search = source  # is ResultSet if index != 0
@@ -57,7 +57,7 @@ class AttributeInfo(Enum):
         if HC.GETFIRST in dictio and dictio[HC.GETFIRST][index] is True:
             while len(matches) > 1:
                 matches.pop(-1)
-        logging.debug("Match: " + str(matches))
+        logging.debug(f"Match for tag '{dictio[HC.NAME][index]}': {str(matches)}")
         return AI.check_matches(dictio, source, matches, index)
 
     @staticmethod
@@ -171,7 +171,7 @@ class DomainInfo(Enum):
             return self.domain_info_dictio
         with open(fetch.DOMAINS_PATH, 'r') as f:
             data = None
-            domain: dict = json.load(f)[self.value]
+            domain: dict = json5.load(f)[self.value]
             tlds = domain.keys()
             for k in tlds:
                 if tld.value in k.split(","):

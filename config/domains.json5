@@ -1,0 +1,258 @@
+// Identifiers needed to fetch elements in pages
+
+{
+  "elcorteingles": {
+    "es": {
+      "prod_name" : {
+        "element": ["h1"],
+        "attribute": ["id"],
+        "name": ["js-product-detail-title"]
+      },
+      "brand": {
+        "element": ["a"],
+        "attribute": ["class"],
+        "name": ["product_detail-brand"]
+      },
+      "price": {
+        // Price container, Regular price, Discounted price,
+        "element": ["div", "p", "p"],
+        "attribute": ["class", "class", "class"],
+        "name": ["product_detail-buy-price-container", "price _big", "price _big _sale"],
+        "iscontainer": [true, false, false]
+      },
+      "color": {
+        "element": ["span"],
+        "attribute": ["id"],
+        "name": ["colorNameSpan"]
+      }
+    }
+  },
+
+
+
+  "amazon": {
+    "es": {
+      "prod_name" : {
+        "element": ["span"],
+        "attribute": ["id"],
+        "name": ["productTitle"]
+      },
+      "brand": {
+        "element": ["a"],
+        "attribute": ["id"],
+        "name": ["bylineInfo"]
+      },
+      "price": {
+        // Price container, Price (books), Price (any),
+        "element": ["span", "span", "span"],
+        "attribute": ["class", "id","class"],
+        "name": ["(.*apexPriceToPay.*|.*priceToPay.*|.*reinventPriceAccordionT2.*)", "price", "a-offscreen"],
+        "iscontainer": [true, false, false]
+      }
+    }
+  },
+
+  "pccomponentes": {
+    "com": {
+      "prod_name" : {
+        "element": ["h1"],
+        "attribute": ["class"],
+        "name": ["h4"]
+      },
+      "brand": {
+        // Product data container, Brand row,
+        "element": ["div", "div"],
+        "attribute": ["class", "class"],
+        "name": ["ficha-producto__datos-de-compra white-card-movil", "col-xs-12 col-sm-9"],
+        "iscontainer": [true, false]
+      },
+      "price": {
+        "element": ["div"],
+        "attribute": ["id"],
+        "name": ["precio-main"],
+        "iscontainer": [false],
+        "getfirst": [true]
+      }
+    }
+  },
+
+  "zalando": {
+    "es": {
+      "prod_name" : {
+        "element": ["span"],
+        "attribute": ["class"],
+        "name": ["EKabf7 R_QwOV"]
+      },
+      "brand": {
+        "element": ["h3"],
+        "attribute": ["class"],
+        "name": ["SZKKsK mt1kvu FxZV-M pVrzNP _5Yd-hZ"]
+      },
+      "price": {
+        "element": ["div"],
+        "attribute": ["class"],
+        "name": ["Bqz_1C"]
+      }
+    }
+  },
+
+  "worten": {
+    "es,pt": {
+      "prod_name" : {
+        "element": ["h1"],
+        "attribute": ["class"],
+        "name": ["w-product__name iss-product-name"]
+      },
+      "brand": {
+        // Info container, Brand,
+        "element": ["li", "span"],
+        "attribute": ["class", "class"],
+        "name": ["clearfix", "details-value"],
+        "text": [null, "Marca"],
+        "iscontainer": [true, false]
+      },
+      "price": {
+        // Price container, Price (new),
+        "element": ["span", "span"],
+        "attribute": ["class", "class"],
+        "name": ["w-product__price__current iss-product-current-price", "product-offers__price-title"]
+      },
+      "shipping": {
+        // Shipping container,
+        "element": ["span"],
+        "attribute": ["class"],
+        "name": ["w-product__actions__shipping-cost"],
+        "iscontainer": [true]
+      }
+    }
+  },
+
+  "carrefour": {
+    "es": {
+      "prod_name" : {
+        "element": ["h1"],
+        "attribute": ["class"],
+        "name": ["product-header__name"]
+      },
+      "price": {
+        // Seller container, Regular price, Discounted price,
+        "element": ["div", "span", "span"],
+        "attribute": ["class", "class", "class"],
+        "name": ["buybox", "buybox__price", "buybox__price--current"],
+        "iscontainer": [true, false, false]
+      }
+    }
+  },
+
+  "aliexpress": {
+    "com": {
+      "prod_name" : {
+        "element": ["h1"],
+        "attribute": ["class"],
+        "name": ["product-title-text"]
+      },
+      "price": {
+        // Price container, Price,
+        "element": ["div", "span"],
+        "attribute": ["class", "class"],
+        "name": ["product-price", "product-price-value"],
+        "iscontainer": [true, false]
+      }
+    }
+  },
+
+  "nike": {
+    "com": {
+      "prod_name" : {
+        "element": ["h1"],
+        "attribute": ["data-test"],
+        "name": ["product-title"],
+        "getfirst": [true]
+      },
+      "price": {
+        // Price container, Discounted price, Regular price,
+        "element": ["div", "div", "div"],
+        "attribute": ["class", "data-test", "data-test"],
+        "name": ["product-price__wrapper css-13hq5b3", "product-price-reduced", "product-price"],
+        "iscontainer": [true, false, false]
+      }
+    }
+  },
+
+
+  "adidas": {
+    "es": {
+      "prod_name" : {
+        "element": ["h1"],
+        "attribute": ["data-testid"],
+        "name": ["product-title"]
+      },
+      "price": {
+        // Price container, Discounted price, Regular price,
+        "element": ["div", "div", "div"],
+        "attribute": ["class", "class", "class"],
+        "name": ["product-description___2cJO2", "gl-price-item gl-price-item--sale notranslate", "gl-price-item notranslate"],
+        "iscontainer": [true, false, false]
+      }
+    }
+  },
+
+  "converse": {
+    "com": {
+      "prod_name" : {
+        "element": ["h1"],
+        "attribute": ["itemprop"],
+        "name": ["name"]
+      },
+      "price": {
+        // Price container, Price,
+        "element": ["div", "span"],
+        "attribute": ["class", "class"],
+        "name": ["product-price", "product-price--sales"],
+        "iscontainer": [true, false]
+      }
+    }
+  },
+
+  "footdistrict": {
+    "com": {
+      "prod_name" : {
+        "element": ["span"],
+        "attribute": ["data-ui-id"],
+        "name": ["page-title-wrapper"]
+      },
+      "brand": {
+        "element": ["div"],
+        "attribute": ["class"],
+        "name": ["amshopby-option-link"]
+      },
+      "price": {
+        // Price container, Price,
+        "element": ["div", "span"],
+        "attribute": ["class", "class"],
+        "name": ["product-info-price", "price"],
+        "iscontainer": [true, false, false]
+      }
+    }
+  },
+
+  "footlocker": {
+    "es": {
+      "prod_name" : {
+        "element": ["span"],
+        "attribute": ["itemprop"],
+        "name": ["name"],
+        "getfirst": [true]
+      },
+      "price": {
+        // Price container, Price with tax message, Discounted price, Regular price,
+        "element": ["form", "span", "span", "span"],
+        "attribute": ["id", "class", "class", null],
+        "name": ["ProductDetails","ProductPrice", "ProductPrice-final", null],
+        "iscontainer": [true, true, false, false],
+        "isskippable": [false, true, true, false]
+      }
+    }
+  }
+
+}

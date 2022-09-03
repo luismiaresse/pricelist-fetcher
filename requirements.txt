@@ -5,3 +5,4 @@ pandas>=1.4.3
 psycopg>=3.0.16
 psycopg-binary>=3.0.16
 pyshorteners>=1.0.1
+json5>=0.9.10
