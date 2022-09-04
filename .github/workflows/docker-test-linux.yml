@@ -1,4 +1,4 @@
-name: Linux Tests (Docker)
+name: Docker Tests (Linux)
 
 on:
   workflow_dispatch:    # Manual trigger
