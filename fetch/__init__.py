@@ -5,29 +5,11 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import logging
 import pyshorteners
-import fetch.domains as doms
 import fetch.conditions as cond
 import fetch.chromedriver as cd
-from classes import Product, Domain, Pricing, Data
-
-
-AI = doms.AttributeInfo
-DI = doms.DomainInfo
-HC = doms.HTMLComponent
-TLDI = doms.TLDInfo
-
-# Constants
-HTMLPARSER = "html.parser"
-# Null values for string and numeric types
-NULLVAL_STR = None
-NULLVAL_NUM = -1.00
-NOT_SUPPORTED = "Unknown"
-DOMAINS_PATH = 'config/domains.json5'
-
-
-def update_page_source(driver: uc.Chrome):
-    source = BeautifulSoup(driver.page_source, features=HTMLPARSER)
-    return source
+from common.domains import AttributeInfo as AI, DomainInfo as DI, TLDInfo as TLDI
+from common.definitions import HTMLPARSER, NOT_SUPPORTED, clean_content
+from common.classes import Product, Domain, Pricing, Data
 
 
 def fetch_attributes(source: BeautifulSoup, dom: Domain):
@@ -38,7 +20,7 @@ def fetch_attributes(source: BeautifulSoup, dom: Domain):
     :param dom: Domain
     :return: dictio: dict
     """
-    dictio = DI.get_domain_info(dom.name, dom.tld)
+    dictio = DI.get_domain_dictio(dom.name, dom.tld)
     attributes = [e for e in AI]
     for attr in attributes:
         if attr in dictio:
@@ -82,31 +64,6 @@ def detect_domain(url: str):
         raise ValueError(f"Domain {domain} not recognized")
 
 
-def split_and_join_str(text: str, split_char: str = None, join_char: str | None = ' ', word_index: int = None):
-    """
-    Splits and joins text.
-    """
-    string = text.split(split_char)
-    if join_char is not None:
-        string = join_char.join(string)
-    elif word_index is not None:
-        return string[word_index]
-    return string
-
-
-def find_char_positions(string: str, char):
-    index = string.find(char)
-    while index != -1:
-        yield index
-        index = string.find(char, index + 1)
-
-
-def remove_key_whitespaces(dictio: dict):
-    for key in dictio:
-        if dictio[key] is not NOT_SUPPORTED:
-            dictio[key] = str(dictio[key]).strip()
-
-
 def fetch_page(url, driver=None):
     if driver is None:
         driver = cd.webdriver_init()
@@ -126,11 +83,6 @@ def fetch_page(url, driver=None):
         logging.fatal(e.msg)
         exit(1)
     return driver
-
-
-def clean_content(content: BeautifulSoup):
-    for s in content.select('style') + content.select('script'):
-        s.decompose()
 
 
 def validate_data(attrs, dom: Domain, surl):

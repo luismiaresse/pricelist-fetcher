@@ -14,7 +14,7 @@
         "name": ["product_detail-brand"]
       },
       "price": {
-        // Price container, Regular price, Discounted price,
+        // Price container, Regular price, Discounted price
         "element": ["div", "p", "p"],
         "attribute": ["class", "class", "class"],
         "name": ["product_detail-buy-price-container", "price _big", "price _big _sale"],
@@ -43,7 +43,7 @@
         "name": ["bylineInfo"]
       },
       "price": {
-        // Price container, Price (books), Price (any),
+        // Price container, Price (books), Price (any)
         "element": ["span", "span", "span"],
         "attribute": ["class", "id","class"],
         "name": ["(.*apexPriceToPay.*|.*priceToPay.*|.*reinventPriceAccordionT2.*)", "price", "a-offscreen"],
@@ -60,7 +60,7 @@
         "name": ["h4"]
       },
       "brand": {
-        // Product data container, Brand row,
+        // Product data container, Brand row
         "element": ["div", "div"],
         "attribute": ["class", "class"],
         "name": ["ficha-producto__datos-de-compra white-card-movil", "col-xs-12 col-sm-9"],
@@ -104,7 +104,7 @@
         "name": ["w-product__name iss-product-name"]
       },
       "brand": {
-        // Info container, Brand,
+        // Info container, Brand
         "element": ["li", "span"],
         "attribute": ["class", "class"],
         "name": ["clearfix", "details-value"],
@@ -112,7 +112,7 @@
         "iscontainer": [true, false]
       },
       "price": {
-        // Price container, Price (new),
+        // Price container, Price (new)
         "element": ["span", "span"],
         "attribute": ["class", "class"],
         "name": ["w-product__price__current iss-product-current-price", "product-offers__price-title"]
@@ -135,7 +135,7 @@
         "name": ["product-header__name"]
       },
       "price": {
-        // Seller container, Regular price, Discounted price,
+        // Seller container, Regular price, Discounted price
         "element": ["div", "span", "span"],
         "attribute": ["class", "class", "class"],
         "name": ["buybox", "buybox__price", "buybox__price--current"],
@@ -152,11 +152,11 @@
         "name": ["product-title-text"]
       },
       "price": {
-        // Price container, Price,
-        "element": ["div", "span"],
-        "attribute": ["class", "class"],
-        "name": ["product-price", "product-price-value"],
-        "iscontainer": [true, false]
+        // Price container, Price
+        "element": ["div", "span", "div", "span"],
+        "attribute": ["class", "class", "class", "class"],
+        "name": ["uniform-banner-box", "uniform-banner-box-price", "product-price", "product-price-value"],
+        "iscontainer": [true, false, true, false]
       }
     }
   },
@@ -170,7 +170,7 @@
         "getfirst": [true]
       },
       "price": {
-        // Price container, Discounted price, Regular price,
+        // Price container, Discounted price, Regular price
         "element": ["div", "div", "div"],
         "attribute": ["class", "data-test", "data-test"],
         "name": ["product-price__wrapper css-13hq5b3", "product-price-reduced", "product-price"],
@@ -188,7 +188,7 @@
         "name": ["product-title"]
       },
       "price": {
-        // Price container, Discounted price, Regular price,
+        // Price container, Discounted price, Regular price
         "element": ["div", "div", "div"],
         "attribute": ["class", "class", "class"],
         "name": ["product-description___2cJO2", "gl-price-item gl-price-item--sale notranslate", "gl-price-item notranslate"],
@@ -205,7 +205,7 @@
         "name": ["name"]
       },
       "price": {
-        // Price container, Price,
+        // Price container, Price
         "element": ["div", "span"],
         "attribute": ["class", "class"],
         "name": ["product-price", "product-price--sales"],
@@ -227,7 +227,7 @@
         "name": ["amshopby-option-link"]
       },
       "price": {
-        // Price container, Price,
+        // Price container, Price
         "element": ["div", "span"],
         "attribute": ["class", "class"],
         "name": ["product-info-price", "price"],
@@ -245,7 +245,7 @@
         "getfirst": [true]
       },
       "price": {
-        // Price container, Price with tax message, Discounted price, Regular price,
+        // Price container, Price with tax message, Discounted price, Regular price
         "element": ["form", "span", "span", "span"],
         "attribute": ["id", "class", "class", null],
         "name": ["ProductDetails","ProductPrice", "ProductPrice-final", null],

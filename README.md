@@ -1,7 +1,11 @@
 # PriceList fetcher (PLF)
+
+**This project is WIP: code is in alpha quality**
+
 A Python script that fetches information (name, brand, price...) about a product, and informs if a lower price was recorded in its price history.
 
-![Linux Tests](https://github.com/luismiaresse/pricelist-fetcher/actions/workflows/docker-test-linux.yml/badge.svg)
+![Docker Build (Linux)](https://github.com/luismiaresse/pricelist-fetcher/actions/workflows/docker-build-linux.yml/badge.svg)
+![Docker Tests (Linux)](https://github.com/luismiaresse/pricelist-fetcher/actions/workflows/docker-test-linux.yml/badge.svg)
 
 This program's output is intended to be used by PriceList, which does not exist yet, but will in the future.
 It can also be used as a CLI tool.
@@ -29,16 +33,16 @@ This tool uses a command-line interface that receives the desired URL as argumen
 It can be executed by typing:
 
 #### Linux
-`$ ./pricelist [OPTIONS] URL` \
+`$ ./plf [OPTIONS] URL` \
 or \
-`$ python pricelist.py [OPTIONS] URL` \
+`$ python plf.py [OPTIONS] URL` \
 \
 in the shell of your liking.
 
 #### Windows
-`> .\pricelist.exe [OPTIONS] URL` \
+`> .\plf.exe [OPTIONS] URL` \
 or \
-`> python pricelist.py [OPTIONS] URL` \
+`> python plf.py [OPTIONS] URL` \
 \
 in CMD or Powershell.
 

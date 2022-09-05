@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-import fetch
+from common.definitions import NULLVAL_NUM, NOT_SUPPORTED
+from common.domains import DomainInfo, TLDInfo
 
 
 @dataclass
@@ -14,18 +15,18 @@ class Product:
     def __str__(self):
         string = f"""Product:
         - Name:         {self.name}
-        {f'- Brand:        {self.brand}' if self.brand is not (None or fetch.NOT_SUPPORTED) else ''}
-        {f'- Category:     {self.category}' if self.category is not (None or fetch.NOT_SUPPORTED) else ''}
-        {f'- Color:        {self.color}' if self.color is not (None or fetch.NOT_SUPPORTED) else ''}
-        {f'- Size:         {self.size}' if self.size is not (None or fetch.NOT_SUPPORTED) else ''}
+        {f'- Brand:        {self.brand}' if self.brand is not (None or NOT_SUPPORTED) else ''}
+        {f'- Category:     {self.category}' if self.category is not (None or NOT_SUPPORTED) else ''}
+        {f'- Color:        {self.color}' if self.color is not (None or NOT_SUPPORTED) else ''}
+        {f'- Size:         {self.size}' if self.size is not (None or NOT_SUPPORTED) else ''}
         """
         return _remove_newlines(string)
 
 
 @dataclass
 class Domain:
-    name: fetch.domains.DomainInfo
-    tld: fetch.domains.TLDInfo
+    name: DomainInfo
+    tld: TLDInfo
     short_url: str = None
 
     def __str__(self):
@@ -40,10 +41,10 @@ class Domain:
 @dataclass(init=False)
 class Pricing:
     def __init__(self, price: str | float = None, currency: str = None, pricetag: str = None, shipping: str = None):
-        if shipping is not (None and fetch.NOT_SUPPORTED):
+        if shipping is not (None and NOT_SUPPORTED):
             self.shipping = float(shipping)
         else:
-            self.shipping = fetch.NULLVAL_NUM
+            self.shipping = NULLVAL_NUM
         if pricetag is not None:
             (self.price, self.currency) = self.fromtag(pricetag)
         elif price is not None and currency is not None:
@@ -88,7 +89,7 @@ class Pricing:
     def __str__(self):
         string = f"""Pricing:
         - Price:        {self.currency} {(self.price-self.shipping if self.shipping is float else self.price)}
-        {f"- Shipping:     {self.currency} {self.shipping}" if self.shipping != fetch.NULLVAL_NUM else ''}
+        {f"- Shipping:     {self.currency} {self.shipping}" if self.shipping != NULLVAL_NUM else ''}
         """
         return _remove_newlines(string)
 
@@ -144,4 +145,3 @@ class Interval:
 
 def _remove_newlines(string: str):
     return "\n".join([s for s in string.splitlines() if s.strip()])
-

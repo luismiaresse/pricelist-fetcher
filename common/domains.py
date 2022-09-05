@@ -1,7 +1,7 @@
 import json5
 import logging
 import re
-import fetch
+from common.definitions import NULLVAL_STR, DOMAINS_PATH
 from enum import Enum
 from bs4 import BeautifulSoup, ResultSet
 
@@ -39,7 +39,7 @@ class AttributeInfo(Enum):
         # Aliases for convenience
         HC = HTMLComponent
         AI = AttributeInfo
-        if HC.TEXT in dictio and dictio[HC.TEXT][index] != fetch.NULLVAL_STR:
+        if HC.TEXT in dictio and dictio[HC.TEXT][index] != NULLVAL_STR:
             search = AI.find_text(source, dictio[HC.TEXT])  # is Tag
         else:
             search = source  # is ResultSet if index != 0
@@ -63,7 +63,7 @@ class AttributeInfo(Enum):
     @staticmethod
     def find_matches(dictio, index, search):
         HC = HTMLComponent
-        if dictio[HC.ATTRIBUTE][index] == fetch.NULLVAL_STR:
+        if dictio[HC.ATTRIBUTE][index] == NULLVAL_STR:
             matches = search.find_all(dictio[HC.ELEMENT])
         else:
             matches = search.find_all(dictio[HC.ELEMENT][index],
@@ -155,30 +155,29 @@ class DomainInfo(Enum):
     FOOTLOCKER = "footlocker"
 
     def __init__(self, _):
-        self.domain_info_dictio = None
+        self.domain_dictio = None
 
-    def set_domain_info(self, attr_dictio: dict):
+    def set_domain_dictio(self, attr_dictio: dict):
         """
         Used to change elements to fetch based on a precondition
         """
-        self.domain_info_dictio = attr_dictio
+        self.domain_dictio = attr_dictio
 
-    def get_domain_info(self, tld: TLDInfo):
+    def get_domain_dictio(self, tld: TLDInfo):
         """
         Returns the domain dictionary
         """
-        if self.domain_info_dictio is not None:
-            return self.domain_info_dictio
-        with open(fetch.DOMAINS_PATH, 'r') as f:
+        if self.domain_dictio is not None:
+            return self.domain_dictio
+        with open(DOMAINS_PATH, 'r') as f:
             data = None
             domain: dict = json5.load(f)[self.value]
             tlds = domain.keys()
-            for k in tlds:
-                if tld.value in k.split(","):
-                    data: dict = domain[k]
+            for t in tlds:
+                if tld.value in t.split(","):
+                    data: dict = domain[t]
             if data is None:
-                logging.error("Current TLD for this domain is not supported")
-                exit(1)
+                raise ValueError("Current TLD for this domain is not supported")
             # Replace all str keys with enum keys
             htmlkeys = {i.value: i for i in HTMLComponent}
             attrkeys = {i.value: i for i in AttributeInfo}
@@ -191,6 +190,6 @@ class DomainInfo(Enum):
                             for i in range(len(data[attr][htmlkeys[html]])):
                                 if isinstance(data[attr][htmlkeys[html]][i], str) and "(" == data[attr][htmlkeys[html]][i][0] and ")" == data[attr][htmlkeys[html]][i][-1]:
                                     data[attr][htmlkeys[html]][i] = re.compile(data[attr][htmlkeys[html]][i])
-
                     data[attrkeys[attr]] = data.pop(attr)
+
         return data

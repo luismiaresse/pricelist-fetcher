@@ -1,10 +1,12 @@
-
-import logging
 import warnings
+from datetime import datetime
+import time
+import pytz
+import logging
 import pandas as pd
 import psycopg  # PostgreSQL driver
 import database.dbsecrets as creds
-from classes import Data, Interval, Timestamp, Pricing, Product
+from common.classes import Data, Interval, Timestamp, Pricing, Product
 
 
 class BaseOps:
@@ -148,4 +150,57 @@ class BaseOps:
 
     # TODO Update newly supported and some existing data
     def update_product(self, data: Data):
-        pass
+        dbprod = self.get_product_by_pid(data.prod.pid)
+        if dbprod == data.prod:
+            logging.debug("Product is unchanged")
+            return
+        elif dbprod is None:
+            logging.debug("Product not found in database")
+            return
+        else:
+            # Update product optional fields
+            try:
+                self.cur.execute(f"""
+                    UPDATE "products" SET "brand" = '{data.prod.brand}',
+                     "category" = '{data.prod.category}', "color" = '{data.prod.color}', "size" = '{data.prod.size}'
+                    WHERE "pid" = '{data.prod.pid}'
+                    """)
+            except Exception as e:
+                logging.error(f"Could not update product in DB: {e}")
+                self.con.cancel()
+                return
+
+
+# TODO Check if product already exists by URL in database and now() - last_update < interval
+# to avoid fetching the same page too many times
+def preprocess(db: BaseOps):
+    if db.url is not None:
+        db.LOCAL_TIMEZONE = time.tzname[0]
+    warnings.simplefilter("ignore")   # TODO Use SQLAlchemy 2.0 in pandas to avoid warning (not possible at the moment)
+
+
+def postprocess(db: BaseOps, data: Data):
+    if db.url is not None:
+        # Escape quotes in strings
+        data.prod.name = data.prod.name.replace("'", "''")
+        data.prod.brand = data.prod.brand.replace("'", "''")
+        # Get PID from DB
+        data.prod.pid = db.get_prod_pid(data)
+        # Insert price history into DB
+        db.insert_history(data)
+        # db.update_product(data)
+        (lowprc, interval) = db.get_lowest_price(data)
+        # Show times according to local timezone
+        localfmt = "%Y-%m-%d at %H:%M:%S"
+        localtz = pytz.timezone(db.LOCAL_TIMEZONE)
+        start = datetime.fromisoformat(interval.start.isoformat()).replace(tzinfo=pytz.utc).astimezone(
+            localtz).strftime(localfmt)
+        end = datetime.fromisoformat(interval.end.isoformat()).replace(tzinfo=pytz.utc).astimezone(localtz).strftime(
+            localfmt)
+
+        if data.prc.price == lowprc.price:
+            print(
+                f"This is the lowest recorded price for this item. It was first seen {f'since {start}' if start != end else 'now'}.")
+        elif start != end:
+            print(f"The lowest recorded price for this item was {lowprc.currency} {lowprc.price}"
+                  f" from {start} to {end}.")

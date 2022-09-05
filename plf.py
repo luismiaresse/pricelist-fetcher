@@ -2,8 +2,7 @@ import argparse
 import logging
 import fetch
 import requests
-from database import BaseOps
-import database.process as dbp
+from database import BaseOps, preprocess, postprocess
 
 
 def setup_parser():
@@ -65,11 +64,11 @@ def main():
 
     if not opts[Options.NO_DB]:
         with BaseOps() as db:
-            dbp.preprocess(db)
+            preprocess(db)
             url = process_url(args.url)
             data = fetch.fetch_data(url=url)
             print(data)
-            dbp.postprocess(db, data)
+            postprocess(db, data)
     else:
         url = process_url(args.url)
         data = fetch.fetch_data(url=url)

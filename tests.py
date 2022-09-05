@@ -1,8 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
+import multiprocessing as mp
 import logging
 import fetch
-import pricelist
-import multiprocessing as mp
+import plf
 
 DI = fetch.DI
 
@@ -24,7 +24,7 @@ testURLs: dict[DI, str] = {
 
 class TestClass:
     def test_domains(self):
-        pricelist.set_logger(logging.DEBUG)
+        plf.set_logger(logging.DEBUG)
 
         # Test fetching each page source in parallel
         def check_page_sources(drivers, sources, dom):
