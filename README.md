@@ -25,6 +25,7 @@ To run the Python script directly, the following packages are also required:
 * [psycopg](https://pypi.org/project/psycopg/)
 * [psycopg-binary](https://pypi.org/project/psycopg-binary/)
 * [pyshorteners](https://pypi.org/project/pyshorteners/)
+* [json5](https://pypi.org/project/json5/)
 
 Many can be autoinstalled by executing `pip install -r requirements.txt` in the project directory.
 
