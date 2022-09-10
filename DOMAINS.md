@@ -4,6 +4,7 @@ These are the domains with their current support at the moment:
 * Amazon (es)
 * ElCorteIngles (es)
 * PCComponentes (com)
+* Coolmod (com)
 * Zalando (es)
 * Worten (es, pt)
 * Carrefour (es)

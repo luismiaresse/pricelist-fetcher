@@ -146,6 +146,7 @@ class DomainInfo(Enum):
     ALIEXPRESS = "aliexpress"
     # Electronics
     PCCOMPONENTES = "pccomponentes"
+    COOLMOD = "coolmod"
     # Fashion, clothing and footwear
     ZALANDO = "zalando"
     NIKE = "nike"

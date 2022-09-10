@@ -29,7 +29,6 @@
   },
 
 
-
   "amazon": {
     "es": {
       "prod_name" : {
@@ -72,6 +71,27 @@
         "name": ["precio-main"],
         "iscontainer": [false],
         "getfirst": [true]
+      }
+    }
+  },
+
+  "coolmod": {
+    "com": {
+      "prod_name" : {
+        "element": ["h1"],
+        "attribute": ["class"],
+        "name": ["productTitle"]
+      },
+      "brand": {
+        "element": ["div"],
+        "attribute": ["class"],
+        "name": ["productextrainfotext pb-xl-3 pb-md-2 pb-3"]
+      },
+      "price": {
+        // Discounted price, Regular price
+        "element": ["div", "div"],
+        "attribute": ["class", "class"],
+        "name": ["finalprice", "normalprice"]
       }
     }
   },
