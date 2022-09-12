@@ -1,3 +1,4 @@
+import os.path
 
 from bs4 import BeautifulSoup
 import undetected_chromedriver as uc
@@ -8,7 +9,13 @@ HTMLPARSER = "html.parser"
 NULLVAL_STR = None
 NULLVAL_NUM = -1.00
 NOT_SUPPORTED = "Unknown"
-DOMAINS_PATH = 'config/domains.json5'
+CONFIG_DEFAULT_PATH = 'config/'
+CONFIG_LINUX_PATH = os.path.join(os.path.expanduser('~'), '.config', 'plf') if os.name == 'posix' else None
+CONFIG_WINDOWS_PATH = os.path.join(os.environ['APPDATA'], 'plf') if os.name == 'nt' else None
+DOMAINS_FILE = 'domains.json5'
+DOMAINS_URL = "https://raw.githubusercontent.com/luismiaresse/pricelist-fetcher/master/config/domains.json5"
+BLACKLIST_FILE = 'blacklist.json5'
+BLACKLIST_URL = "https://raw.githubusercontent.com/luismiaresse/pricelist-fetcher/master/config/blacklist.json5"
 
 
 def remove_key_whitespaces(dictio: dict):

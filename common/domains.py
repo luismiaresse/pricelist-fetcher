@@ -1,7 +1,9 @@
+import os
 import json5
 import logging
 import re
-from common.definitions import NULLVAL_STR, DOMAINS_PATH
+import requests
+from common.definitions import NULLVAL_STR, CONFIG_DEFAULT_PATH, CONFIG_LINUX_PATH, CONFIG_WINDOWS_PATH, DOMAINS_FILE, DOMAINS_URL, BLACKLIST_FILE, BLACKLIST_URL
 from enum import Enum
 from bs4 import BeautifulSoup, ResultSet
 
@@ -170,7 +172,8 @@ class DomainInfo(Enum):
         """
         if self.domain_dictio is not None:
             return self.domain_dictio
-        with open(DOMAINS_PATH, 'r') as f:
+        conf = get_config_path()
+        with open(conf + DOMAINS_FILE, 'r') as f:
             data = None
             domain: dict = json5.load(f)[self.value]
             tlds = domain.keys()
@@ -194,3 +197,45 @@ class DomainInfo(Enum):
                     data[attrkeys[attr]] = data.pop(attr)
 
         return data
+
+
+def fetch_config(path: str):
+    """
+    Fetches config files from the repository.
+    """
+    def fetch_file(url: str, filepath: str, overwrite: bool = False):
+        if not os.path.exists(filepath) or overwrite:
+            r = requests.get(url)
+            with open(filepath, 'w') as f:
+                f.write(r.text)
+
+    os.makedirs(path, exist_ok=True)
+    logging.info("Fetching config files")
+    fetch_file(DOMAINS_URL, path + DOMAINS_FILE, True)
+    fetch_file(BLACKLIST_URL, path + BLACKLIST_FILE, True)
+
+
+def get_config_path():
+    """
+    Gets the config files path.
+    If they are not present, downloads them from the repository.
+    """
+    #
+    if os.path.exists(CONFIG_DEFAULT_PATH):
+        logging.debug("Using default config files")
+        return CONFIG_DEFAULT_PATH
+    if os.name == "posix":
+        if os.path.exists(CONFIG_LINUX_PATH):
+            logging.debug("Using linux config files")
+            return CONFIG_LINUX_PATH
+        logging.debug("Downloading linux config files")
+        fetch_config(CONFIG_LINUX_PATH)
+        return CONFIG_LINUX_PATH
+    # TODO Needs testing on Windows
+    if os.name == "nt":
+        if os.path.exists(CONFIG_WINDOWS_PATH):
+            logging.debug("Using windows config files")
+            return CONFIG_WINDOWS_PATH
+        logging.debug("Downloading windows config files")
+        fetch_config(CONFIG_WINDOWS_PATH)
+        return CONFIG_WINDOWS_PATH

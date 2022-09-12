@@ -1,6 +1,11 @@
 // Identifiers needed to fetch elements in pages
 
 {
+
+  "plf" : {
+    "min_version": "0.0.1"
+  },
+
   "elcorteingles": {
     "es": {
       "prod_name" : {
