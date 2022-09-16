@@ -157,17 +157,19 @@ class BaseOps:
         elif dbprod is None:
             logging.debug("Product not found in database")
             return
+
         else:
             # Update product optional fields
-            try:
-                self.cur.execute(f"""
-                    UPDATE "products" SET "brand" = '{data.prod.brand}',
-                     "category" = '{data.prod.category}', "color" = '{data.prod.color}', "size" = '{data.prod.size}'
+            query = f"""
+                    UPDATE "products" SET "brand" = '{data.prod.brand}', "category" = '{data.prod.category}'
                     WHERE "pid" = '{data.prod.pid}'
-                    """)
+                    """
+            try:
+                self.cur.execute(query)
+                self.con.commit()
             except Exception as e:
                 logging.error(f"Could not update product in DB: {e}")
-                self.con.cancel()
+                self.con.rollback()
                 return
 
 
@@ -186,9 +188,10 @@ def postprocess(db: BaseOps, data: Data):
         data.prod.brand = data.prod.brand.replace("'", "''")
         # Get PID from DB
         data.prod.pid = db.get_prod_pid(data)
+        # Update if any fields are different
+        db.update_product(data)
         # Insert price history into DB
         db.insert_history(data)
-        # db.update_product(data)
         (lowprc, interval) = db.get_lowest_price(data)
         # Show times according to local timezone
         localfmt = "%Y-%m-%d at %H:%M:%S"

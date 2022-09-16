@@ -20,10 +20,10 @@
       },
       "price": {
         // Price container, Regular price, Discounted price
-        "element": ["div", "p", "p"],
-        "attribute": ["class", "class", "class"],
-        "name": ["product_detail-buy-price-container", "price _big", "price _big _sale"],
-        "iscontainer": [true, false, false]
+        "element": ["input","div", "p", "p"],
+        "attribute": ["data-status","class", "class", "class"],
+        "name": ["sold_out","product_detail-buy-price-container", "price _big", "price _big _sale"],
+        "iscontainer": [false, true, false, false]
       },
       "color": {
         "element": ["span"],

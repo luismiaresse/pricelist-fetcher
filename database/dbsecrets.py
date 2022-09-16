@@ -24,7 +24,7 @@ class DBCreds:
 
     def __init__(self):
         url = os.environ.get(ENV_URL)
-        if url is not (None or ''):
+        if url is not (None and ''):
             self.URL = os.environ.get(ENV_URL)
         elif self.URL is None and self.MANAGER is not None and self.DATABASE is not None and self.HOST is not None:
             self.URL = f"{self.MANAGER}://{self.HOST}:{str(self.PORT)}/{self.DATABASE}"

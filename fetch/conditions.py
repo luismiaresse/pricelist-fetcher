@@ -20,18 +20,23 @@ def preconditions(url: str, dom: Domain, driver: uc.Chrome, source: BeautifulSou
     :return: updated source: BeautifulSoup
     """
     match dom.name:
-        # case DI.ELCORTEINGLES:
-        #     # Needed to bypass 5-second timer for bots
-        #     attr_dictio = DI.get_domain_info(DI.ELCORTEINGLES)
-        #     delay = 5
-        #     # Waits -delay- seconds or until -element- is present
-        #     logging.info("Waiting for bot validation...")
-        #     try:
-        #         WebDriverWait(driver, delay) \
-        #             .until(EC.presence_of_element_located((By.ID, attr_dictio[AI.PROD_NAME][HC.NAME][0])))
-        #     except TimeoutException:
-        #         logging.fatal("Timeout: Could not bypass bot detection")
-        #         exit(1)
+
+        case DI.ELCORTEINGLES:
+            if source.find("input", attrs={"data-status": "not_available"}):
+                raise ValueError("Product is not available or does not exist")
+
+        # Needed to bypass 5-second timer for bots
+            # attr_dictio = DI.get_domain_info(DI.ELCORTEINGLES)
+            # delay = 5
+            # # Waits -delay- seconds or until -element- is present
+            # logging.info("Waiting for bot validation...")
+            # try:
+            #     WebDriverWait(driver, delay) \
+            #         .until(EC.presence_of_element_located((By.ID, attr_dictio[AI.PROD_NAME][HC.NAME][0])))
+            # except TimeoutException:
+            #     logging.fatal("Timeout: Could not bypass bot detection")
+            #     exit(1)
+
         case DI.WORTEN:
             # Switch price container to marketplace if Worten does not exist
             attr_dictio = DI.get_domain_dictio(DI.WORTEN, dom.tld)
@@ -47,10 +52,10 @@ def preconditions(url: str, dom: Domain, driver: uc.Chrome, source: BeautifulSou
             slash_url = url.split('/')
             attr_dictio[AI.CATEGORY] = slash_url[4].upper()
             DI.set_domain_dictio(DI.WORTEN, attr_dictio)
+
         case DI.NIKE:
             if source.find("h1", attrs={"class": re.compile('.*not-found.*')}):
-                logging.error("Product is not available or does not exist")
-                exit(1)
+                raise ValueError("Product is not available or does not exist")
             # Detect if page is SNKRS
             if "launch" in url:
                 attr_dictio = DI.get_domain_dictio(DI.NIKE, dom.tld)
@@ -68,6 +73,7 @@ def preconditions(url: str, dom: Domain, driver: uc.Chrome, source: BeautifulSou
                 attr_dictio[AI.PRICETAG][HC.NAME][0] = 'price'
                 attr_dictio[AI.PRICETAG][HC.ISCONTAINER][0] = False
                 DI.set_domain_dictio(DI.NIKE, attr_dictio)
+
         case DI.FOOTLOCKER:
             # Waits for the product to be loaded
             delay = 3
@@ -78,6 +84,7 @@ def preconditions(url: str, dom: Domain, driver: uc.Chrome, source: BeautifulSou
             except TimeoutException:
                 logging.fatal("Timeout: Could not load product info")
                 exit(1)
+
     return source
 
 

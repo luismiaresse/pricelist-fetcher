@@ -62,17 +62,21 @@ def main():
     else:
         set_logger(logging.INFO)
 
-    if not opts[Options.NO_DB]:
-        with BaseOps() as db:
-            preprocess(db)
+    try:
+        if not opts[Options.NO_DB]:
+            with BaseOps() as db:
+                preprocess(db)
+                url = process_url(args.url)
+                data = fetch.fetch_data(url=url)
+                print(data)
+                postprocess(db, data)
+        else:
             url = process_url(args.url)
             data = fetch.fetch_data(url=url)
             print(data)
-            postprocess(db, data)
-    else:
-        url = process_url(args.url)
-        data = fetch.fetch_data(url=url)
-        print(data)
+    except ValueError as e:
+        logging.error(e)
+        exit(1)
     exit(0)
 
 
