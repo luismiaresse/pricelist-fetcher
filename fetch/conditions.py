@@ -4,8 +4,9 @@ from selenium.common.exceptions import TimeoutException
 import undetected_chromedriver as uc
 import logging
 import re
+from price_parser import Price
 from common.domains import AttributeInfo as AI, DomainInfo as DI, HTMLComponent as HC, TLDInfo as TLDI
-from common.classes import Domain, Pricing
+from common.classes import Domain
 from common.definitions import split_and_join_str, remove_key_whitespaces, update_page_source, NOT_SUPPORTED, NULLVAL_NUM
 
 
@@ -96,7 +97,7 @@ def postconditions(attrs: dict, dom: Domain):
     :param dom: Domain
     """
     # Change str to float
-    if attrs[AI.SHIPPING] == NOT_SUPPORTED:
+    if attrs[AI.SHIPPING] in NOT_SUPPORTED:
         attrs[AI.SHIPPING] = NULLVAL_NUM
     match dom.name:
 
@@ -128,27 +129,12 @@ def postconditions(attrs: dict, dom: Domain):
                         attrs[AI.BRAND] = text.removeprefix("Visit the Store of ")
 
         case DI.WORTEN:
-            if attrs[AI.SHIPPING] is not NULLVAL_NUM:
-                pos = str(attrs[AI.SHIPPING]).find(Pricing.fromtag(attrs[AI.PRICETAG])[1])
-                attrs[AI.SHIPPING] = Pricing.fromtag(attrs[AI.SHIPPING][pos:])[0]
-
-        case DI.ZALANDO:
-            if dom.tld == TLDI.ES:
-                # Removes 'desde '
-                if attrs[AI.PRICETAG] is not None and "desde" in attrs[AI.PRICETAG]:
-                    attrs[AI.PRICETAG] = str(attrs[AI.PRICETAG]).removeprefix("desde ")
-                # Removes all after 'IVA'
-                attrs[AI.PRICETAG] = re.sub("IVA.*", '', str(attrs[AI.PRICETAG]))
+            if attrs[AI.SHIPPING] not in NOT_SUPPORTED:
+                attrs[AI.SHIPPING] = Price.fromstring(attrs[AI.SHIPPING])
 
         case DI.NIKE | DI.ADIDAS | DI.CONVERSE:
             # Brand is always -Name-
-            if attrs[AI.BRAND] == NOT_SUPPORTED:
-                attrs[AI.BRAND] = dom.name.name
-
-        case DI.ALIEXPRESS:
-            # Gets the lower price
-            if attrs[AI.PRICETAG] is not None:
-                attrs[AI.PRICETAG] = str(attrs[AI.PRICETAG]).split("-")[0]
+            attrs[AI.BRAND] = dom.name.name
 
     # Common fixes
     # Remove whitespaces

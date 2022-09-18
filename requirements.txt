@@ -1,8 +1,10 @@
 beautifulsoup4>=4.11.1
 selenium>=4.4.0
+requests>=2.26.0
 undetected_chromedriver>=3.1.5.post4
 pandas>=1.4.3
 psycopg>=3.0.16
 psycopg-binary>=3.0.16
 pyshorteners>=1.0.1
 json5>=0.9.10
+price-parser>=0.3.4

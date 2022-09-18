@@ -35,6 +35,8 @@ def process_url(url):
     """
     Useful to get full URLs from shortened ones and add https if missing.
     """
+    if "http://" in url:
+        url = url.replace("http://", "https://")
     if "https://" not in url:
         url = f"https://{url}"
     if "da.gd" in url:

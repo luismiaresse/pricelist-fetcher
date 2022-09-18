@@ -18,6 +18,7 @@ To run the Python script directly, the following packages are also required:
 
 * [python 3.10+](https://www.python.org/downloads/)
 * [pip](https://pypi.org/project/pip/)
+* [requests](https://pypi.org/project/requests/)
 * [selenium](https://pypi.org/project/selenium)
 * [undetected_chromedriver](https://pypi.org/project/undetected_chromedriver/)
 * [beautifulsoup4](https://pypi.org/project/beautifulsoup4/)
@@ -26,6 +27,7 @@ To run the Python script directly, the following packages are also required:
 * [psycopg-binary](https://pypi.org/project/psycopg-binary/)
 * [pyshorteners](https://pypi.org/project/pyshorteners/)
 * [json5](https://pypi.org/project/json5/)
+* [price-parser](https://pypi.org/project/price-parser/)
 
 Many can be autoinstalled by executing `pip install -r requirements.txt` in the project directory.
 

@@ -1,6 +1,8 @@
 import warnings
 from datetime import datetime
 import time
+
+from price_parser import Price
 import pytz
 import logging
 import pandas as pd
@@ -24,8 +26,8 @@ class BaseOps:
 
         if self.url is None:
             logging.info("""No database credentials found. Database features such as lowest price or prefetching will not be available.
-            If you want to use these features, please add your database to database/dbsecrets.py, or use release binary;
-            otherwise consider using --no-db option.""")
+            If you want to use these features, please add your database following database/dbsecrets.py instructions,
+            or use release binary; otherwise consider using --no-db option.""")
             return
 
         self.con = psycopg.connect(self.url)
@@ -74,48 +76,50 @@ class BaseOps:
         query = f"""
             SELECT "price", "end_date", "end_time" 
             FROM "histories"
-            WHERE "pid" = {data.prod.pid} AND "currency" = '{data.prc.currency}'
+            WHERE "pid" = {data.prod.pid} AND "currency" = '{data.prc.price.currency}'
             ORDER BY "end_date" DESC, "end_time" DESC
             """
 
         dictio = pd.read_sql_query(query, self.con)
 
-        # If latest price is unchanged update end date/time and return
-        if not dictio.empty and dictio["price"][0] == data.prc.price:
+        if not dictio.empty and dictio["price"][0] == data.prc.price.amount_float:
+            # If latest price is unchanged update end date/time
+            logging.debug("Updating end date/time")
             timestamp = Timestamp(dictio["end_date"][0], dictio["end_time"][0])
             try:
                 self.cur.execute(f"""
                     UPDATE "histories" SET "end_date" = CURRENT_DATE, "end_time" = CURRENT_TIME
                     WHERE "pid" = '{data.prod.pid}' 
-                     AND "currency" = '{data.prc.currency}' AND "price" = '{data.prc.price}' AND "end_date" = '{timestamp.date}'
-                     AND "end_time" = '{timestamp.time}'
+                     AND "currency" = '{data.prc.price.currency}' AND "price" = '{str(data.prc.price.amount_float)}' AND "end_date" = '{timestamp.date}'
+                     AND "end_time" = '{timestamp.time}';
                     """)
             except Exception as e:
                 logging.debug(f"Could not update end date/time in DB: {e}")
-            logging.debug("Price is unchanged")
-            return
+                self.con.rollback()
+                return
         else:
             # Insert into history. Date/Time for start and end is the same the first time a new price is detected
             # Any subsequent checks with same price will update end date/time only
+            logging.debug("Inserting new price")
             try:
                 self.cur.execute(f"""
                     INSERT INTO "histories" ("pid", "price", "start_date", "start_time", "end_date", "end_time", "currency", "shipping")
-                     VALUES ('{data.prod.pid}', '{data.prc.price}', CURRENT_DATE, CURRENT_TIME, CURRENT_DATE, CURRENT_TIME,
-                      '{data.prc.currency}', '{data.prc.shipping}')
+                     VALUES ('{data.prod.pid}', '{data.prc.price.amount_float}', CURRENT_DATE, CURRENT_TIME, CURRENT_DATE, CURRENT_TIME,
+                      '{data.prc.price.currency}', '{data.prc.shipping.amount_float}')
                     """)
             except Exception as e:
                 logging.error(f"Could not insert history into DB: {e}")
-                self.con.cancel()
+                self.con.rollback()
                 return
         self.con.commit()
-        logging.debug("Succesfully updated DB with latest price")
+        logging.debug("History successfully updated")
 
     def get_lowest_price(self, data: Data):
         # Get lowest price of product
         query = f"""
             SELECT "start_date", "start_time", "end_date", "end_time", "price", "currency"
             FROM "histories"
-            WHERE "pid" = '{data.prod.pid}' AND "currency" = '{data.prc.currency}'
+            WHERE "pid" = '{data.prod.pid}' AND "currency" = '{data.prc.price.currency}'
             ORDER BY "price"
             """
 
@@ -125,8 +129,8 @@ class BaseOps:
         if dictio.empty:
             logging.error("No price history for this product")
             exit(1)
-
-        pricing = Pricing(price=dictio["price"][0], currency=dictio["currency"][0])
+        price = Price(amount=dictio["price"][0], currency=dictio["currency"][0], amount_text=None)
+        pricing = Pricing(price=price)
         startstamp = Timestamp(dictio["start_date"][0], dictio["start_time"][0])
         endstamp = Timestamp(dictio["end_date"][0], dictio["end_time"][0])
         interval = Interval(startstamp, endstamp)
@@ -135,7 +139,7 @@ class BaseOps:
     def get_product_by_pid(self, pid: int):
         # Get product by PID
         query = f"""
-            SELECT "pid", "prod_name", "dom_name", "dom_tld", "short_url", "brand", "category", "color", "size"
+            SELECT "pid", "prod_name", "brand", "category", "color", "size"
             FROM "products"
             WHERE "pid" = '{pid}'
             """
@@ -152,12 +156,11 @@ class BaseOps:
     def update_product(self, data: Data):
         dbprod = self.get_product_by_pid(data.prod.pid)
         if dbprod == data.prod:
-            logging.debug("Product is unchanged")
+            logging.debug("Product == DB Product")
             return
         elif dbprod is None:
             logging.debug("Product not found in database")
             return
-
         else:
             # Update product optional fields
             query = f"""
@@ -188,7 +191,7 @@ def postprocess(db: BaseOps, data: Data):
         data.prod.brand = data.prod.brand.replace("'", "''")
         # Get PID from DB
         data.prod.pid = db.get_prod_pid(data)
-        # Update if any fields are different
+        # Update if optional fields are different
         db.update_product(data)
         # Insert price history into DB
         db.insert_history(data)
@@ -201,9 +204,12 @@ def postprocess(db: BaseOps, data: Data):
         end = datetime.fromisoformat(interval.end.isoformat()).replace(tzinfo=pytz.utc).astimezone(localtz).strftime(
             localfmt)
 
-        if data.prc.price == lowprc.price:
+        if data.prc.price.amount_float == lowprc.price.amount_float:
             print(
                 f"This is the lowest recorded price for this item. It was first seen {f'since {start}' if start != end else 'now'}.")
         elif start != end:
-            print(f"The lowest recorded price for this item was {lowprc.currency} {lowprc.price}"
+            print(f"The lowest recorded price for this item was {lowprc.price.currency} {lowprc.price.amount}"
                   f" from {start} to {end}.")
+        else:
+            print(f"The lowest recorded price for this item was {lowprc.price.currency} {lowprc.price.amount}"
+                  f" in {start}.")

@@ -8,7 +8,7 @@ import pyshorteners
 import fetch.conditions as cond
 import fetch.chromedriver as cd
 from common.domains import AttributeInfo as AI, DomainInfo as DI, TLDInfo as TLDI
-from common.definitions import HTMLPARSER, NOT_SUPPORTED, clean_content
+from common.definitions import HTMLPARSER, NOT_SUPPORTED, UNKNOWN, clean_content
 from common.classes import Product, Domain, Pricing, Data
 
 
@@ -28,10 +28,10 @@ def fetch_attributes(source: BeautifulSoup, dom: Domain):
                 pass
             else:
                 dictio[attr] = AI.find_attribute(dictio[attr], source=source)
-                if dictio[attr] is None or dictio[attr] == "None" or dictio[attr] == "":
-                    dictio[attr] = NOT_SUPPORTED
+                if dictio[attr] in NOT_SUPPORTED:
+                    dictio[attr] = UNKNOWN
         else:
-            dictio[attr] = NOT_SUPPORTED
+            dictio[attr] = UNKNOWN
     return dictio
 
 
@@ -88,12 +88,13 @@ def fetch_page(url, driver=None):
 def validate_data(attrs, dom: Domain, surl):
     must_attrs = (attrs[AI.PROD_NAME], attrs[AI.PRICETAG])
     must_vars = (dom.name.name, dom.tld.name, surl)
-    if (NOT_SUPPORTED or None or "" or "None") in must_attrs + must_vars:
-        logging.fatal("Could not fetch some mandatory attributes")
-        logging.debug("Attributes state:")
-        for attr in must_attrs + must_vars:
-            logging.debug(f"{attr}")
-        raise ValueError(f"Could not fetch some mandatory attributes for domain {dom.name.name}")
+    for attr in must_attrs + must_vars:
+        if attr in NOT_SUPPORTED:
+            logging.fatal("Could not fetch some mandatory attributes")
+            logging.debug("Attributes state:")
+            for att in must_attrs + must_vars:
+                logging.debug(f"{att}")
+            raise ValueError(f"Could not fetch some mandatory attributes for domain {dom.name.name}")
 
 
 def shorten_url(url):
@@ -133,7 +134,7 @@ def get_data_from_soup(url: str, source: BeautifulSoup):
     prod = Product(name=attrs[AI.PROD_NAME], brand=attrs[AI.BRAND], category=attrs[AI.CATEGORY],
                    color=attrs[AI.COLOR], size=attrs[AI.SIZE])
     dom = Domain(name=domain.name, tld=domain.tld, short_url=url)
-    prc = Pricing(pricetag=attrs[AI.PRICETAG], shipping=attrs[AI.SHIPPING])
+    prc = Pricing(pricetag=attrs[AI.PRICETAG], shippingtag=attrs[AI.SHIPPING])
     data = Data(dom=dom, prod=prod, prc=prc)
     return data
 

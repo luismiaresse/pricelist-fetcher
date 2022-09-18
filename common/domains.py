@@ -3,7 +3,7 @@ import json5
 import logging
 import re
 import requests
-from common.definitions import NULLVAL_STR, CONFIG_DEFAULT_PATH, CONFIG_LINUX_PATH, CONFIG_WINDOWS_PATH, DOMAINS_FILE, DOMAINS_URL, BLACKLIST_FILE, BLACKLIST_URL
+from common.definitions import NOT_SUPPORTED, CONFIG_DEFAULT_PATH, CONFIG_LINUX_PATH, CONFIG_WINDOWS_PATH, DOMAINS_FILE, DOMAINS_URL, BLACKLIST_FILE, BLACKLIST_URL
 from enum import Enum
 from bs4 import BeautifulSoup, ResultSet
 
@@ -41,7 +41,7 @@ class AttributeInfo(Enum):
         # Aliases for convenience
         HC = HTMLComponent
         AI = AttributeInfo
-        if HC.TEXT in dictio and dictio[HC.TEXT][index] != NULLVAL_STR:
+        if HC.TEXT in dictio and dictio[HC.TEXT][index] not in NOT_SUPPORTED:
             search = AI.find_text(source, dictio[HC.TEXT])  # is Tag
         else:
             search = source  # is ResultSet if index != 0
@@ -65,7 +65,7 @@ class AttributeInfo(Enum):
     @staticmethod
     def find_matches(dictio, index, search):
         HC = HTMLComponent
-        if dictio[HC.ATTRIBUTE][index] == NULLVAL_STR:
+        if dictio[HC.ATTRIBUTE][index] in NOT_SUPPORTED:
             matches = search.find_all(dictio[HC.ELEMENT])
         else:
             matches = search.find_all(dictio[HC.ELEMENT][index],
