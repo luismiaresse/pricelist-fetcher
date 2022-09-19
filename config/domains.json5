@@ -220,8 +220,8 @@
       "price": {
         // Price container, Discounted price, Regular price
         "element": ["div", "div", "div"],
-        "attribute": ["class", "class", "class"],
-        "name": ["product-description___2cJO2", "gl-price-item gl-price-item--sale notranslate", "gl-price-item notranslate"],
+        "attribute": ["data-auto-id", "class", "class"],
+        "name": ["gl-price-item", "gl-price-item gl-price-item--sale notranslate", "gl-price-item notranslate"],
         "iscontainer": [true, false, false]
       }
     }
