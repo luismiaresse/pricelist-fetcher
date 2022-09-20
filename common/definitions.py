@@ -3,6 +3,7 @@ import os.path
 from bs4 import BeautifulSoup
 import undetected_chromedriver as uc
 
+PROGRAM_NAME = 'pricelist-fetcher'
 # Constants
 HTMLPARSER = "html.parser"
 # Null values for string and numeric types
@@ -11,8 +12,10 @@ NULLVAL_STR = None
 NULLVAL_NUM = -1.00
 NOT_SUPPORTED = [UNKNOWN, NULLVAL_NUM, NULLVAL_STR, "None", "null", ""]
 CONFIG_DEFAULT_PATH = 'config/'
-CONFIG_LINUX_PATH = os.path.join(os.path.expanduser('~'), '.config', 'plf') if os.name == 'posix' else None
-CONFIG_WINDOWS_PATH = os.path.join(os.environ['APPDATA'], 'plf') if os.name == 'nt' else None
+CONFIG_LINUX_PATH = os.path.join(os.path.expanduser('~'), '.config', PROGRAM_NAME) if os.name == 'posix' else None
+CONFIG_WINDOWS_PATH = os.path.join(os.environ['APPDATA'], PROGRAM_NAME) if os.name == 'nt' else None
+TMP_LINUX_DIR = os.path.join('/', 'tmp', PROGRAM_NAME) if os.name == 'posix' else None
+TMP_WINDOWS_DIR = os.path.join(os.environ['TEMP'], PROGRAM_NAME) if os.name == 'nt' else None
 DOMAINS_FILE = 'domains.json5'
 DOMAINS_URL = "https://raw.githubusercontent.com/luismiaresse/pricelist-fetcher/master/config/domains.json5"
 BLACKLIST_FILE = 'blacklist.json5'

@@ -2,10 +2,6 @@
 
 {
 
-  "plf" : {
-    "min_version": "0.0.1"
-  },
-
   "elcorteingles": {
     "es": {
       "prod_name" : {
