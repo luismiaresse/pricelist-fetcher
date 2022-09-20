@@ -72,13 +72,12 @@ def fetch_page(url, driver=None):
         driver.execute_script("window.open('');")          # Open new tab
         driver.switch_to.window(driver.window_handles[1])  # Switch to new tab
         driver.get(url)
-    except TimeoutException as e:
-        logging.error(e.msg + " Retrying one more time")
+    except TimeoutException:
+        logging.error("Timeout: Retrying one more time")
         try:
             driver.get(url)
-        except TimeoutException as e:
-            logging.fatal(e.msg + " Retry failed.")
-            raise e
+        except TimeoutException:
+            logging.fatal("Timeout: Retry failed. Check your internet connection or page availability")
     except WebDriverException as e:
         logging.fatal(e.msg)
         exit(1)

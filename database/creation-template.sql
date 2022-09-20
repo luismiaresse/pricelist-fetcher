@@ -83,8 +83,6 @@ ALTER TABLE ONLY public.products ALTER COLUMN pid SET DEFAULT nextval('public.pr
 
 SELECT pg_catalog.setval('public.histories_pid_seq', 1, false);
 
-SELECT pg_catalog.setval('public.products_pid_seq', 21, true);
-
 ALTER TABLE ONLY public.histories
     ADD CONSTRAINT histories_pk PRIMARY KEY (pid, price, start_date, start_time, end_date, end_time, currency);
 

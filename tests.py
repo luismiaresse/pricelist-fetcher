@@ -70,7 +70,7 @@ class TestClass:
                 executor.submit(check_page_sources, drivers, sources, dom)
 
         if None in sources.values():
-            logging.error("Some sources are None. Trying single thread fallback.")
+            logging.error("Some sources are None. Trying single thread fallback")
             sources = source_fallback(sources)
 
         # Test attributes from soup
@@ -79,7 +79,7 @@ class TestClass:
                 executor.submit(check_data_from_soup, sources, results, dom)
 
         if None in results.values():
-            logging.error("Some results are None. Trying single thread fallback...")
+            logging.error("Some results are None. Trying single thread fallback")
             results = result_fallback(results, sources)
 
         for data in results.values():
