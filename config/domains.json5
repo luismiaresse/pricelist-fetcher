@@ -36,7 +36,7 @@
 
 
   "amazon": {
-    "es": {
+    "es,com": {
       "prod_name" : {
         "element": ["span"],
         "attribute": ["id"],
